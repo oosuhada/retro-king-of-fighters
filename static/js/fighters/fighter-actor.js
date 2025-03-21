@@ -34,6 +34,13 @@ const JUMP_ATTACKS = {
     D: { damage: 15, reach: 124, height: 54, offsetY: 102, name: 'JUMP D', level: 'high' },
 };
 
+const ATTACK_TIMING = {
+    A: { startup: 5, active: 4, total: 15, poseScaleX: 1.03, poseScaleY: 1.00, poseShift: 4 },
+    B: { startup: 7, active: 5, total: 19, poseScaleX: 1.08, poseScaleY: 0.96, poseShift: 8 },
+    C: { startup: 10, active: 6, total: 25, poseScaleX: 1.12, poseScaleY: 1.02, poseShift: 11 },
+    D: { startup: 12, active: 7, total: 29, poseScaleX: 1.17, poseScaleY: 0.92, poseShift: 14 },
+};
+
 export class FighterActor extends FrameActor {
     constructor(root, info) {
         super();
@@ -201,6 +208,7 @@ export class FighterActor extends FrameActor {
 
     startAttack(kind, special) {
         const normal = this.attackProfile(kind);
+        const timing = ATTACK_TIMING[kind];
         const maxMultiplier = this.maxModeMs > 0 ? 1.25 : 1;
         this.currentAttack = {
             ...normal,
@@ -218,6 +226,12 @@ export class FighterActor extends FrameActor {
             special: !!special,
             knockdown: !!normal.knockdown,
             hitStopMs: special ? 125 : ['C', 'D'].includes(kind) ? 95 : 65,
+            startupFrames: special ? Math.max(4, timing.startup - 2) : timing.startup,
+            activeFrames: special ? timing.active + 2 : timing.active,
+            totalFrames: special ? timing.total + 5 : timing.total,
+            poseScaleX: special ? timing.poseScaleX + 0.08 : timing.poseScaleX,
+            poseScaleY: special ? timing.poseScaleY + 0.03 : timing.poseScaleY,
+            poseShift: special ? timing.poseShift + 8 : timing.poseShift,
         };
         this.status = FighterState.ATTACK;
         this.frame_current_cnt = 0;
@@ -467,7 +481,9 @@ export class FighterActor extends FrameActor {
         if (this.status !== FighterState.ATTACK || this.attackHit || this.currentAttack.throw) return;
         const animation = this.animations.get(FighterState.ATTACK);
         if (!animation) return;
-        if (this.frame_current_cnt < animation.att_start || this.frame_current_cnt >= animation.att_start + Math.max(animation.att_t, 2)) return;
+        const startup = this.currentAttack.startupFrames ?? animation.att_start;
+        const active = this.currentAttack.activeFrames ?? Math.max(animation.att_t, 2);
+        if (this.frame_current_cnt < startup || this.frame_current_cnt >= startup + active) return;
 
         const opponent = this.root.players[1 - this.id];
         const reach = (this.currentAttack.reach || 100) * (this.currentAttack.reachScale || 1);
@@ -539,30 +555,70 @@ export class FighterActor extends FrameActor {
         const animation = this.animations.get(animationStatus);
 
         if (animation?.loaded) {
-            const frame = parseInt(this.frame_current_cnt / animation.frame_rate) % animation.frame_cnt;
+            const isAttack = this.status === FighterState.ATTACK;
+            const attackProgress = isAttack
+                ? Math.min(1, this.frame_current_cnt / Math.max(1, this.currentAttack.totalFrames || 1))
+                : 0;
+            const frame = isAttack
+                ? Math.min(animation.frame_cnt - 1, Math.floor(attackProgress * animation.frame_cnt))
+                : parseInt(this.frame_current_cnt / animation.frame_rate) % animation.frame_cnt;
             const image = animation.gif.frames[frame].image;
-            if (this.direction === 1) {
-                this.ctx.drawImage(image, this.x, this.y + animation.offset_y, image.width * animation.scale, image.height * animation.scale);
-            } else {
+            const poseScaleX = isAttack ? (this.currentAttack.poseScaleX || 1) : 1;
+            const poseScaleY = isAttack ? (this.currentAttack.poseScaleY || 1) : 1;
+            const poseShift = isAttack ? (this.currentAttack.poseShift || 0) : 0;
+            const drawX = this.x + this.direction * poseShift;
+            const drawY = this.y + animation.offset_y;
+            const drawWidth = image.width * animation.scale * poseScaleX;
+            const drawHeight = image.height * animation.scale * poseScaleY;
+
+            const drawPose = (alpha = 1, trailOffset = 0) => {
                 this.ctx.save();
-                this.ctx.scale(-1, 1);
-                this.ctx.translate(-this.root.game_map.$canvas.width(), 0);
-                this.ctx.drawImage(image, this.root.game_map.$canvas.width() - this.x - this.width, this.y + animation.offset_y, image.width * animation.scale, image.height * animation.scale);
+                this.ctx.globalAlpha = alpha;
+                this.ctx.imageSmoothingEnabled = false;
+                if (this.direction === 1) {
+                    this.ctx.drawImage(image, drawX - trailOffset, drawY, drawWidth, drawHeight);
+                } else {
+                    this.ctx.scale(-1, 1);
+                    this.ctx.translate(-this.root.game_map.$canvas.width(), 0);
+                    this.ctx.drawImage(
+                        this.root.game_map.$canvas.width() - drawX - this.width - trailOffset,
+                        drawY,
+                        drawWidth,
+                        drawHeight
+                    );
+                }
                 this.ctx.restore();
+            };
+
+            if (isAttack && (this.currentAttack.special || ['C', 'D'].includes(this.currentAttack.kind))) {
+                drawPose(this.currentAttack.special ? 0.16 : 0.10, this.direction * 18);
+                drawPose(this.currentAttack.special ? 0.24 : 0.14, this.direction * 9);
             }
+            drawPose(1, 0);
 
             if (this.status === FighterState.ATTACK && this.currentAttack.special) {
                 this.ctx.save();
-                this.ctx.globalAlpha = 0.35;
-                this.ctx.fillStyle = this.characterName.includes('MAI') ? '#68d7ff' : '#ff9b2f';
+                this.ctx.globalAlpha = 0.48;
+                const isMai = this.characterName.includes('MAI');
+                this.ctx.fillStyle = isMai ? '#bff6ff' : '#ffd34f';
                 const effectX = this.direction > 0 ? this.x + this.width - 4 : this.x - 52;
                 const effectY = this.y + 58;
-                this.ctx.fillRect(effectX, effectY, 56, 7);
-                this.ctx.fillRect(effectX + (this.direction > 0 ? 14 : -14), effectY + 13, 42, 5);
+                if (isMai) {
+                    this.ctx.fillRect(effectX, effectY, 64, 5);
+                    this.ctx.fillRect(effectX + (this.direction > 0 ? 12 : -12), effectY + 11, 48, 4);
+                    this.ctx.fillRect(effectX + (this.direction > 0 ? 22 : -22), effectY + 20, 34, 3);
+                } else {
+                    this.ctx.fillRect(effectX, effectY, 54, 8);
+                    this.ctx.fillRect(effectX + (this.direction > 0 ? 12 : -12), effectY - 8, 30, 6);
+                    this.ctx.fillRect(effectX + (this.direction > 0 ? 18 : -18), effectY + 12, 38, 5);
+                }
                 this.ctx.restore();
             }
 
-            if ([FighterState.ATTACK, FighterState.HIT, FighterState.KO].includes(this.status) && this.frame_current_cnt === animation.frame_rate * (animation.frame_cnt - 1)) {
+            if (this.status === FighterState.ATTACK && this.frame_current_cnt >= (this.currentAttack.totalFrames || animation.frame_rate * animation.frame_cnt)) {
+                this.status = FighterState.IDLE;
+                this.vx = 0;
+            } else if ([FighterState.HIT, FighterState.KO].includes(this.status) && this.frame_current_cnt === animation.frame_rate * (animation.frame_cnt - 1)) {
                 if (this.status === FighterState.KO) this.frame_current_cnt--;
                 else this.status = FighterState.IDLE;
             }
