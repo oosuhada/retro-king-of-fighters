@@ -400,3 +400,138 @@
 @media (max-width: 1280px) {
     #kof { transform-origin: top left; }
 }
+
+/* Low-resolution arcade presentation: keep new flows visually inside the same era as the GIF assets. */
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #050505;
+}
+
+#kof,
+#kof * {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#kof>.kof-flow-screen,
+#kof>.kof-help-overlay,
+#kof>.kof-character-select {
+    background: rgba(0, 0, 0, .82);
+    font-family: "Courier New", monospace;
+    text-shadow: 2px 2px 0 #000;
+}
+
+#kof .kof-flow-screen::before,
+#kof .kof-help-overlay::before,
+#kof .kof-character-select::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0, rgba(255,255,255,.025) 1px, transparent 1px, transparent 4px);
+}
+
+#kof .kof-logo,
+#kof .kof-flow-title,
+#kof .kof-select-title {
+    font-family: Impact, "Arial Black", sans-serif;
+    letter-spacing: 1px;
+    filter: contrast(1.2);
+}
+
+#kof .kof-logo {
+    color: #f7dd32;
+    text-shadow: 6px 6px 0 #780000, -2px -2px 0 #111;
+}
+
+#kof .kof-menu-button {
+    min-width: 292px;
+    padding: 13px 22px;
+    border: 3px solid #f1f1d8;
+    background: #111;
+    box-shadow: 5px 5px 0 #650000;
+    font-family: "Courier New", monospace;
+    font-size: 23px;
+    font-weight: 900;
+    transition: none;
+}
+
+#kof .kof-menu-button:hover,
+#kof .kof-menu-button:focus {
+    color: #111;
+    background: #f7dd32;
+    transform: none;
+    outline: none;
+}
+
+#kof .kof-menu-button span,
+#kof .kof-flow-note,
+#kof .kof-subtitle,
+#kof .kof-text-button {
+    font-family: "Courier New", monospace;
+    text-transform: uppercase;
+}
+
+#kof .kof-control-card,
+#kof .kof-select-move-panel,
+#kof .kof-order-side {
+    border-width: 3px;
+    background: #0b0b0b;
+    box-shadow: 4px 4px 0 #000;
+}
+
+#kof kbd {
+    border: 2px solid #e4e4cf;
+    border-bottom-width: 2px;
+    background: #171717;
+    font-family: "Courier New", monospace;
+}
+
+#kof .kof-select-grid {
+    gap: 12px;
+    margin-top: 36px;
+}
+
+#kof .kof-select-card {
+    width: 188px;
+    height: 214px;
+    border: 5px solid #dedec9;
+    background-color: #101010;
+    background-position: center 20px;
+    background-size: auto 154px;
+    font-family: "Courier New", monospace;
+    font-size: 26px;
+    box-shadow: 5px 5px 0 #000;
+}
+
+#kof .kof-select-card span {
+    margin-top: 160px;
+    background: #050505;
+}
+
+#kof .kof-select-card.p1-selected { box-shadow: -9px 0 0 #2671dc, 5px 5px 0 #000; }
+#kof .kof-select-card.p2-selected { box-shadow: 9px 0 0 #cc2a20, 5px 5px 0 #000; }
+#kof .kof-select-card.p1-selected.p2-selected { box-shadow: -9px 0 0 #2671dc, 9px 0 0 #cc2a20, 5px 5px 0 #000; }
+
+#kof .kof-battle-controls {
+    bottom: 8px;
+    border: 2px solid #d0cda9;
+    background: #080808;
+    color: #e7e4c5;
+    font: bold 12px "Courier New", monospace;
+}
+
+#kof .kof-move-callout,
+#kof .kof-combo-callout {
+    transition: none;
+    font-family: "Courier New", monospace;
+    font-weight: 900;
+}
+
+#kof .kof-head-timer,
+#kof .kof-head-hp-0,
+#kof .kof-head-hp-1,
+#kof .kof-power {
+    image-rendering: pixelated;
+}

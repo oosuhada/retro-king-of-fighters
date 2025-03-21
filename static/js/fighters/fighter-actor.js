@@ -225,6 +225,13 @@ export class FighterActor extends FrameActor {
         this.vx = special?.lunge ? this.direction * special.lunge : 0;
         if (special?.launch) this.vy = special.launch;
         this.root.show_move_name(this.id, this.currentAttack.name);
+        if (special) {
+            this.root.game_map.addHitEffect(
+                this.x + this.width / 2 + this.direction * 42,
+                this.y + 105,
+                { special: true, size: 18, life: 110 }
+            );
+        }
 
         if (special?.projectile) {
             this.root.game_map.spawnProjectile(this, {
@@ -440,6 +447,12 @@ export class FighterActor extends FrameActor {
             }
         }
 
+        this.root.game_map.addHitEffect(
+            this.x + this.width / 2,
+            this.y + (this.status === FighterState.CROUCH ? 130 : 82),
+            { guard: guarding, special: !!options.special, size: options.special ? 38 : 27, life: options.special ? 190 : 145 }
+        );
+
         this.update_health_ui();
         this.update_power_ui();
         if (!options.projectile) this.root.game_map.requestHitStop(guarding ? 45 : 80);
@@ -535,6 +548,17 @@ export class FighterActor extends FrameActor {
                 this.ctx.scale(-1, 1);
                 this.ctx.translate(-this.root.game_map.$canvas.width(), 0);
                 this.ctx.drawImage(image, this.root.game_map.$canvas.width() - this.x - this.width, this.y + animation.offset_y, image.width * animation.scale, image.height * animation.scale);
+                this.ctx.restore();
+            }
+
+            if (this.status === FighterState.ATTACK && this.currentAttack.special) {
+                this.ctx.save();
+                this.ctx.globalAlpha = 0.35;
+                this.ctx.fillStyle = this.characterName.includes('MAI') ? '#68d7ff' : '#ff9b2f';
+                const effectX = this.direction > 0 ? this.x + this.width - 4 : this.x - 52;
+                const effectY = this.y + 58;
+                this.ctx.fillRect(effectX, effectY, 56, 7);
+                this.ctx.fillRect(effectX + (this.direction > 0 ? 14 : -14), effectY + 13, 42, 5);
                 this.ctx.restore();
             }
 

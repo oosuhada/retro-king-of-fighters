@@ -54,10 +54,36 @@ export class BattleArena extends FrameActor {
         this.team_result = null;
         this.projectiles = [];
         this.hitStopRemaining = 0;
+        this.hitEffects = [];
+        this.shakeMs = 0;
+        this.shakeStrength = 0;
     }
 
     requestHitStop(durationMs) {
         this.hitStopRemaining = Math.max(this.hitStopRemaining, durationMs);
+    }
+
+    addHitEffect(x, y, options = {}) {
+        this.hitEffects.push({
+            x,
+            y,
+            life: options.life || 150,
+            maxLife: options.life || 150,
+            size: options.size || 26,
+            guard: !!options.guard,
+            special: !!options.special,
+        });
+        if (!options.guard) {
+            this.shakeMs = Math.max(this.shakeMs, options.special ? 150 : 85);
+            this.shakeStrength = Math.max(this.shakeStrength, options.special ? 9 : 5);
+        }
+    }
+
+    updateHitEffects() {
+        this.hitEffects.forEach(effect => effect.life -= this.timedelta);
+        this.hitEffects = this.hitEffects.filter(effect => effect.life > 0);
+        this.shakeMs = Math.max(0, this.shakeMs - this.timedelta);
+        if (this.shakeMs <= 0) this.shakeStrength = 0;
     }
 
     isHitStopped() {
@@ -150,6 +176,7 @@ export class BattleArena extends FrameActor {
     }
 
     update() {
+        this.updateHitEffects();
         if (this.hitStopRemaining > 0) {
             this.hitStopRemaining = Math.max(0, this.hitStopRemaining - this.timedelta);
             this.render();
@@ -189,7 +216,23 @@ export class BattleArena extends FrameActor {
 
     render() {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-        // this.ctx.fillStyle = 'black';
-        // this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.root.$kof.css('transform', this.shakeMs > 0
+            ? `translate(${Math.round((Math.random() - 0.5) * this.shakeStrength)}px, ${Math.round((Math.random() - 0.5) * this.shakeStrength)}px)`
+            : 'translate(0, 0)');
+        this.hitEffects.forEach(effect => {
+            const t = effect.life / effect.maxLife;
+            const radius = effect.size * (1.35 - t * 0.35);
+            this.ctx.save();
+            this.ctx.translate(Math.round(effect.x), Math.round(effect.y));
+            this.ctx.globalAlpha = Math.min(1, t * 1.7);
+            this.ctx.fillStyle = effect.guard ? '#7fd7ff' : effect.special ? '#fff35c' : '#ffffff';
+            for (let i = 0; i < 8; i++) {
+                this.ctx.rotate(Math.PI / 4);
+                this.ctx.fillRect(Math.round(radius * 0.3), -3, Math.round(radius), 6);
+            }
+            this.ctx.fillStyle = effect.guard ? '#ffffff' : '#ff5a18';
+            this.ctx.fillRect(-7, -7, 14, 14);
+            this.ctx.restore();
+        });
     }
 }

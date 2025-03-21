@@ -88,10 +88,19 @@ export class Projectile extends FrameActor {
     render() {
         const ctx = this.gameMap.ctx;
         ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        const cx = Math.round(this.x + this.width / 2);
+        const cy = Math.round(this.y + this.height / 2);
+        const pulse = Math.floor((Date.now() / 55) % 3);
+        ctx.translate(cx, cy);
+        ctx.scale(this.direction, 1);
         ctx.fillStyle = this.outerColor;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillRect(-Math.round(this.width / 2), -4, this.width, 8);
+        ctx.fillRect(-Math.round(this.width / 3), -Math.round(this.height / 2), Math.round(this.width * 0.66), this.height);
+        ctx.fillRect(-Math.round(this.width / 2) - 8 - pulse * 3, -2, 12 + pulse * 3, 4);
         ctx.fillStyle = this.innerColor;
-        ctx.fillRect(this.x + 8, this.y + 5, Math.max(8, this.width - 16), Math.max(6, this.height - 10));
+        ctx.fillRect(-Math.round(this.width / 3) + 5, -5, Math.max(10, Math.round(this.width * 0.66) - 10), 10);
+        ctx.fillRect(Math.round(this.width / 4), -2, 12, 4);
         ctx.restore();
     }
 }
