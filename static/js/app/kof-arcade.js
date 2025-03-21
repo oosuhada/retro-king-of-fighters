@@ -74,10 +74,10 @@ class KofArcade {
     showTitle() {
         this.clearScreenEvents();
         this.setOverlay(`
-            <div class="kof-logo">THE KING OF FIGHTERS</div>
-            <div class="kof-subtitle">CLASSIC KOF · JAVASCRIPT CLONE</div>
-            <button class="kof-menu-button kof-start">PRESS ENTER</button>
-            <div class="kof-flow-note">1P CPU ARCADE · 2P LOCAL SINGLE / 3 VS 3</div>
+            <div class="kof-title-mark">KOF</div>
+            <div class="kof-logo">THE KING<br>OF FIGHTERS</div>
+            <button class="kof-menu-button kof-start">PRESS START</button>
+            <div class="kof-title-credit">1P VS CPU / 2P VS PLAYER</div>
         `);
         const next = () => this.showPlayerMode();
         this.$kof.find('.kof-start').on('click', next);
@@ -89,12 +89,12 @@ class KofArcade {
     showPlayerMode() {
         this.clearScreenEvents();
         this.setOverlay(`
-            <div class="kof-flow-title">HOW DO YOU WANT TO PLAY?</div>
+            <div class="kof-flow-title">PLAYER SELECT</div>
             <div class="kof-menu-stack">
-                <button class="kof-menu-button" data-mode="one"><b>1 PLAYER</b><span>VS COMPUTER</span></button>
-                <button class="kof-menu-button" data-mode="two"><b>2 PLAYERS</b><span>LOCAL VERSUS</span></button>
+                <button class="kof-menu-button" data-mode="one"><b>1 PLAYER</b><span>VS CPU</span></button>
+                <button class="kof-menu-button" data-mode="two"><b>2 PLAYERS</b><span>VS PLAYER</span></button>
             </div>
-            <div class="kof-flow-note">KEYBOARD · CLICK OR PRESS 1 / 2</div>
+            <div class="kof-flow-note">PRESS 1 / 2</div>
         `);
         const choose = mode => {
             this.playerMode = mode;

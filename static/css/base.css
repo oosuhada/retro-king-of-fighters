@@ -417,7 +417,7 @@ body {
 #kof>.kof-flow-screen,
 #kof>.kof-help-overlay,
 #kof>.kof-character-select {
-    background: rgba(0, 0, 0, .82);
+    background: #020202;
     font-family: "Courier New", monospace;
     text-shadow: 2px 2px 0 #000;
 }
@@ -429,40 +429,111 @@ body {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0, rgba(255,255,255,.025) 1px, transparent 1px, transparent 4px);
+    background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0, rgba(255,255,255,.035) 1px, transparent 1px, transparent 4px),
+        radial-gradient(circle at 50% 45%, rgba(120,0,0,.22), transparent 54%);
 }
 
 #kof .kof-logo,
 #kof .kof-flow-title,
 #kof .kof-select-title {
     font-family: Impact, "Arial Black", sans-serif;
-    letter-spacing: 1px;
+    letter-spacing: 0;
     filter: contrast(1.2);
 }
 
 #kof .kof-logo {
-    color: #f7dd32;
-    text-shadow: 6px 6px 0 #780000, -2px -2px 0 #111;
+    margin-top: 112px;
+    color: #f8d42a;
+    font-size: 92px;
+    line-height: .72;
+    font-style: italic;
+    transform: skew(-7deg);
+    text-shadow:
+        0 5px 0 #d98700,
+        7px 11px 0 #7e0800,
+        -3px -3px 0 #f7f0c8,
+        10px 15px 0 #000;
+}
+
+#kof .kof-title-mark {
+    position: absolute;
+    top: 78px;
+    left: 50%;
+    transform: translateX(-50%) skew(-10deg);
+    color: #c71912;
+    font: italic 122px/1 Impact, "Arial Black", sans-serif;
+    letter-spacing: -8px;
+    opacity: .72;
+    text-shadow: 5px 5px 0 #4d0000;
+}
+
+#kof .kof-title-credit {
+    position: absolute;
+    bottom: 62px;
+    left: 0;
+    right: 0;
+    color: #d4d0a9;
+    font: 15px "Courier New", monospace;
+    letter-spacing: 2px;
 }
 
 #kof .kof-menu-button {
-    min-width: 292px;
-    padding: 13px 22px;
-    border: 3px solid #f1f1d8;
-    background: #111;
-    box-shadow: 5px 5px 0 #650000;
+    position: relative;
+    min-width: 360px;
+    padding: 8px 22px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     font-family: "Courier New", monospace;
-    font-size: 23px;
+    font-size: 26px;
     font-weight: 900;
     transition: none;
+    text-shadow: 3px 3px 0 #000;
 }
 
 #kof .kof-menu-button:hover,
 #kof .kof-menu-button:focus {
-    color: #111;
-    background: #f7dd32;
+    color: #f7df34;
+    background: transparent;
     transform: none;
     outline: none;
+}
+
+#kof .kof-menu-button:hover::before,
+#kof .kof-menu-button:focus::before {
+    content: "▶";
+    position: absolute;
+    left: 34px;
+    color: #f7df34;
+}
+
+#kof .kof-start {
+    margin-top: 92px;
+    animation: kofStartBlink 900ms steps(1, end) infinite;
+    color: #fff;
+    font-size: 24px;
+}
+
+@keyframes kofStartBlink {
+    0%, 54% { opacity: 1; }
+    55%, 100% { opacity: .22; }
+}
+
+#kof .kof-flow-title {
+    margin-top: 70px;
+    margin-bottom: 38px;
+    color: #f6d936;
+    font-size: 48px;
+    text-shadow: 4px 4px 0 #7b0800, 7px 7px 0 #000;
+}
+
+#kof .kof-menu-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 54px;
 }
 
 #kof .kof-menu-button span,
@@ -471,6 +542,18 @@ body {
 #kof .kof-text-button {
     font-family: "Courier New", monospace;
     text-transform: uppercase;
+}
+
+#kof .kof-menu-button span {
+    margin-top: 2px;
+    color: #a9a588;
+    font-size: 12px;
+}
+
+#kof .kof-flow-note {
+    margin-top: 34px;
+    color: #c9c39e;
+    font-size: 12px;
 }
 
 #kof .kof-control-card,
