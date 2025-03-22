@@ -1,4 +1,4 @@
-import { MotionBuffer } from './motion-buffer.js';
+import { MotionBuffer } from './motion-buffer.js?v=20260826-5';
 
 export const PLAYER_CONTROLS = [
     {
@@ -51,10 +51,10 @@ export class FightInput {
         return token;
     }
 
-    consumeCommand(profile, facing, motion, attackKey = null, maxAgeMs = 500) {
+    consumeCommand(profile, facing, motion, attackKey = null, maxAgeMs = 500, strict = false) {
         const sequence = motion.map(token => this.directionKey(profile, facing, token));
         if (attackKey) sequence.push(attackKey);
-        return this.buffer.consume(sequence, maxAgeMs);
+        return this.buffer.consume(sequence, maxAgeMs, strict);
     }
 
     consumeChord(keys, id) {

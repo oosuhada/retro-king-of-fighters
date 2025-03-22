@@ -10,7 +10,7 @@ export class MotionBuffer {
         this.events = this.events.filter(event => now - event.time <= this.maxAgeMs);
     }
 
-    consume(sequence, maxAgeMs = 500) {
+    consume(sequence, maxAgeMs = 500, strict = false) {
         const now = performance.now();
         let cursor = this.events.length - 1;
         let latestMatchedIndex = -1;
@@ -26,6 +26,7 @@ export class MotionBuffer {
                     matched = true;
                     break;
                 }
+                if (strict) return false;
             }
             if (!matched) return false;
         }

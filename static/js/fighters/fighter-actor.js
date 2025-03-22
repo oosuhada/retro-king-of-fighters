@@ -1,5 +1,5 @@
 import { FrameActor } from "../runtime/frame-actor.js";
-import { PLAYER_CONTROLS } from '../input/fight-input.js';
+import { PLAYER_CONTROLS } from '../input/fight-input.js?v=20260826-5';
 
 export const FighterState = Object.freeze({
     IDLE: 0,
@@ -380,13 +380,13 @@ export class FighterActor extends FrameActor {
             }
         }
 
-        if (this.input.consumeCommand(c, this.direction, ['forward', 'forward'], null, 280)) {
+        if (this.input.consumeCommand(c, this.direction, ['forward', 'forward'], null, 280, true)) {
             this.dashTime = 170;
             this.vx = this.direction * 720;
             this.status = FighterState.WALK;
             return;
         }
-        if (this.input.consumeCommand(c, this.direction, ['back', 'back'], null, 280)) {
+        if (this.input.consumeCommand(c, this.direction, ['back', 'back'], null, 280, true)) {
             this.dashTime = 140;
             this.vx = -this.direction * 620;
             this.vy = -210;
@@ -394,7 +394,7 @@ export class FighterActor extends FrameActor {
             return;
         }
 
-        if (this.input.consumeCommand(c, this.direction, ['down', 'up'], null, 360)) {
+        if (this.input.consumeCommand(c, this.direction, ['down', 'up'], null, 360, true)) {
             this.status = FighterState.JUMP;
             this.vy = this.jumpSpeed * 1.2;
             this.vx = forward ? this.direction * this.walkSpeed * 1.45 : back ? -this.direction * this.walkSpeed * 1.15 : 0;
@@ -402,7 +402,7 @@ export class FighterActor extends FrameActor {
             this.root.show_move_name(this.id, 'SUPER JUMP');
             return;
         }
-        if (this.input.consumeCommand(c, this.direction, ['up', 'up'], null, 260)) {
+        if (this.input.consumeCommand(c, this.direction, ['up', 'up'], null, 260, true)) {
             this.status = FighterState.JUMP;
             this.vy = this.jumpSpeed * 0.72;
             this.vx = forward ? this.direction * this.walkSpeed * 1.08 : back ? -this.direction * this.walkSpeed * 0.9 : 0;
