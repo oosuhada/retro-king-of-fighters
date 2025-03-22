@@ -16,6 +16,7 @@ export class Projectile extends FrameActor {
         this.lifeMs = config.lifeMs || 1900;
         this.outerColor = config.outerColor || '#fff2a0';
         this.innerColor = config.innerColor || '#ff7200';
+        this.style = config.style || 'flame';
         this.destroyed = false;
         this.gameMap.projectiles.push(this);
     }
@@ -94,13 +95,38 @@ export class Projectile extends FrameActor {
         const pulse = Math.floor((Date.now() / 55) % 3);
         ctx.translate(cx, cy);
         ctx.scale(this.direction, 1);
-        ctx.fillStyle = this.outerColor;
-        ctx.fillRect(-Math.round(this.width / 2), -4, this.width, 8);
-        ctx.fillRect(-Math.round(this.width / 3), -Math.round(this.height / 2), Math.round(this.width * 0.66), this.height);
-        ctx.fillRect(-Math.round(this.width / 2) - 8 - pulse * 3, -2, 12 + pulse * 3, 4);
-        ctx.fillStyle = this.innerColor;
-        ctx.fillRect(-Math.round(this.width / 3) + 5, -5, Math.max(10, Math.round(this.width * 0.66) - 10), 10);
-        ctx.fillRect(Math.round(this.width / 4), -2, 12, 4);
+        if (this.style === 'fan') {
+            ctx.rotate((pulse - 1) * 0.12);
+            ctx.fillStyle = this.outerColor;
+            ctx.beginPath();
+            ctx.moveTo(-this.width * 0.42, 0);
+            ctx.lineTo(this.width * 0.34, -this.height * 0.58);
+            ctx.lineTo(this.width * 0.5, 0);
+            ctx.lineTo(this.width * 0.34, this.height * 0.58);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = this.innerColor;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(-this.width * 0.34, 0);
+            ctx.lineTo(this.width * 0.36, -this.height * 0.43);
+            ctx.moveTo(-this.width * 0.34, 0);
+            ctx.lineTo(this.width * 0.36, this.height * 0.43);
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = this.outerColor;
+            ctx.beginPath();
+            ctx.moveTo(-this.width * 0.58 - pulse * 3, 0);
+            ctx.quadraticCurveTo(-this.width * 0.18, -this.height * 0.78, this.width * 0.5, -2);
+            ctx.quadraticCurveTo(this.width * 0.16, this.height * 0.76, -this.width * 0.58 - pulse * 3, 0);
+            ctx.fill();
+            ctx.fillStyle = this.innerColor;
+            ctx.beginPath();
+            ctx.moveTo(-this.width * 0.32, 0);
+            ctx.quadraticCurveTo(0, -this.height * 0.42, this.width * 0.38, 0);
+            ctx.quadraticCurveTo(0, this.height * 0.40, -this.width * 0.32, 0);
+            ctx.fill();
+        }
         ctx.restore();
     }
 }

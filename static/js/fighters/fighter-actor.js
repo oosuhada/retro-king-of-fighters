@@ -73,6 +73,7 @@ export class FighterActor extends FrameActor {
         this.comboTimer = 0;
         this.currentAttack = { ...NORMAL_ATTACKS.A, kind: 'A' };
         this.attackHit = false;
+        this.cancelUsed = false;
         this.dashTime = 0;
         this.guardStunMs = 0;
         this.hitStunMs = 0;
@@ -95,9 +96,33 @@ export class FighterActor extends FrameActor {
     }
 
     attackProfile(kind) {
-        if (this.status === FighterState.JUMP) return JUMP_ATTACKS[kind];
-        if (this.status === FighterState.CROUCH) return CROUCH_ATTACKS[kind];
-        return NORMAL_ATTACKS[kind];
+        const base = this.status === FighterState.JUMP
+            ? JUMP_ATTACKS[kind]
+            : this.status === FighterState.CROUCH
+                ? CROUCH_ATTACKS[kind]
+                : NORMAL_ATTACKS[kind];
+        const isMai = this.characterName.includes('MAI');
+        const tuning = isMai
+            ? {
+                A: { reach: -6, damage: -1, startup: -1, total: -2, poseShift: 2 },
+                B: { reach: 18, damage: 0, startup: -1, total: -1, poseShift: 7 },
+                C: { reach: -4, damage: 0, startup: 0, total: 0, poseShift: 3 },
+                D: { reach: 24, damage: 1, startup: 1, total: 1, poseShift: 10 },
+            }[kind]
+            : {
+                A: { reach: 4, damage: 0, startup: 0, total: 0, poseShift: 3 },
+                B: { reach: 4, damage: 0, startup: 1, total: 1, poseShift: 4 },
+                C: { reach: 12, damage: 2, startup: 1, total: 2, poseShift: 8 },
+                D: { reach: 8, damage: 2, startup: 2, total: 2, poseShift: 8 },
+            }[kind];
+        return {
+            ...base,
+            damage: base.damage + tuning.damage,
+            reach: base.reach + tuning.reach,
+            characterStartupAdjust: tuning.startup,
+            characterTotalAdjust: tuning.total,
+            characterPoseShift: tuning.poseShift,
+        };
     }
 
     hurtbox() {
@@ -151,11 +176,12 @@ export class FighterActor extends FrameActor {
     specialFor(kind, attackKey) {
         const superMove = ['A', 'C'].includes(kind) &&
             this.stocks > 0 &&
-            this.input.consumeCommand(this.controls, this.direction, ['down', 'forward', 'down', 'forward'], attackKey, 720);
+            this.input.consumeCommand(this.controls, this.direction, ['down', 'forward', 'down', 'forward'], attackKey, 900);
         if (superMove) {
             const maxSuper = this.maxModeMs > 0 && this.stocks > 1;
             this.stocks -= maxSuper ? 2 : 1;
             this.update_power_ui();
+            this.root.game_map.triggerSuperFlash(this.id, maxSuper ? 420 : 300);
             return {
                 name: maxSuper
                     ? (this.characterName.includes('MAI') ? 'MAX CHO HISSATSU SHINOBI BACHI' : 'MAX OROCHINAGI')
@@ -166,7 +192,7 @@ export class FighterActor extends FrameActor {
             };
         }
 
-        if (['A', 'C'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['forward', 'down', 'forward'], attackKey, 500)) {
+        if (['A', 'C'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['forward', 'down', 'forward'], attackKey, 620)) {
             return {
                 name: this.characterName.includes('MAI') ? 'HISSATSU SHINOBI BACHI' : '100 SHIKI: ONIYAKI',
                 bonusDamage: 13,
@@ -175,7 +201,7 @@ export class FighterActor extends FrameActor {
             };
         }
 
-        if (['A', 'C'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['down', 'forward'], attackKey, 450)) {
+        if (['A', 'C'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['down', 'forward'], attackKey, 560)) {
             this.addPower(6);
             const isMai = this.characterName.includes('MAI');
             return {
@@ -190,11 +216,12 @@ export class FighterActor extends FrameActor {
                     offsetY: isMai ? 62 : 74,
                     outerColor: isMai ? '#d8f5ff' : '#fff2a0',
                     innerColor: isMai ? '#5ac8fa' : '#ff7200',
+                    style: isMai ? 'fan' : 'flame',
                 },
             };
         }
 
-        if (['B', 'D'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['down', 'back'], attackKey, 450)) {
+        if (['B', 'D'].includes(kind) && this.input.consumeCommand(this.controls, this.direction, ['down', 'back'], attackKey, 560)) {
             this.addPower(6);
             return {
                 name: this.characterName.includes('MAI') ? 'RYU ENBU' : '212 SHIKI: KOTOTSUKI YO',
@@ -226,16 +253,17 @@ export class FighterActor extends FrameActor {
             special: !!special,
             knockdown: !!normal.knockdown,
             hitStopMs: special ? 125 : ['C', 'D'].includes(kind) ? 95 : 65,
-            startupFrames: special ? Math.max(4, timing.startup - 2) : timing.startup,
+            startupFrames: Math.max(3, (special ? timing.startup - 2 : timing.startup) + (normal.characterStartupAdjust || 0)),
             activeFrames: special ? timing.active + 2 : timing.active,
-            totalFrames: special ? timing.total + 5 : timing.total,
+            totalFrames: Math.max(11, (special ? timing.total + 5 : timing.total) + (normal.characterTotalAdjust || 0)),
             poseScaleX: special ? timing.poseScaleX + 0.08 : timing.poseScaleX,
             poseScaleY: special ? timing.poseScaleY + 0.03 : timing.poseScaleY,
-            poseShift: special ? timing.poseShift + 8 : timing.poseShift,
+            poseShift: (special ? timing.poseShift + 8 : timing.poseShift) + (normal.characterPoseShift || 0),
         };
         this.status = FighterState.ATTACK;
         this.frame_current_cnt = 0;
         this.attackHit = false;
+        this.cancelUsed = false;
         this.vx = special?.lunge ? this.direction * special.lunge : 0;
         if (special?.launch) this.vy = special.launch;
         this.root.show_move_name(this.id, this.currentAttack.name);
@@ -275,6 +303,7 @@ export class FighterActor extends FrameActor {
         this.stocks -= 1;
         this.maxModeMs = 20000;
         this.root.show_move_name(this.id, 'POWER MAX');
+        this.root.game_map.triggerSuperFlash(this.id, 220);
         this.update_power_ui();
         return true;
     }
@@ -312,11 +341,16 @@ export class FighterActor extends FrameActor {
 
         if (this.status === FighterState.ATTACK && this.currentAttack.throw) return;
 
-        if (this.status === FighterState.ATTACK && this.attackHit) {
+        if (this.status === FighterState.ATTACK && this.attackHit && !this.cancelUsed) {
             for (const kind of ['A', 'B', 'C', 'D']) {
                 const attackKey = c.attacks[kind];
                 if (this.input.consumePress(attackKey)) {
-                    this.startAttack(kind, this.specialFor(kind, attackKey));
+                    const nextSpecial = this.specialFor(kind, attackKey);
+                    const canCancel = nextSpecial || ['A', 'B'].includes(this.currentAttack.kind) && ['C', 'D'].includes(kind);
+                    if (!canCancel) return;
+                    this.cancelUsed = true;
+                    this.startAttack(kind, nextSpecial);
+                    this.cancelUsed = true;
                     return;
                 }
             }
@@ -355,7 +389,8 @@ export class FighterActor extends FrameActor {
         if (this.input.consumeCommand(c, this.direction, ['back', 'back'], null, 280)) {
             this.dashTime = 140;
             this.vx = -this.direction * 620;
-            this.status = FighterState.WALK_BACK;
+            this.vy = -210;
+            this.status = FighterState.JUMP;
             return;
         }
 
@@ -412,10 +447,22 @@ export class FighterActor extends FrameActor {
             if (this.status === FighterState.JUMP) this.status = FighterState.IDLE;
         }
         this.x = Math.max(0, Math.min(this.root.game_map.$canvas.width() - this.width, this.x));
+        const opponent = this.root.players[1 - this.id];
+        if (opponent && this.status !== FighterState.JUMP && opponent.status !== FighterState.JUMP) {
+            const minGap = 74;
+            const center = this.x + this.width / 2;
+            const otherCenter = opponent.x + opponent.width / 2;
+            const gap = Math.abs(center - otherCenter);
+            if (gap < minGap) {
+                const correction = (minGap - gap) / 2;
+                this.x += center < otherCenter ? -correction : correction;
+                this.x = Math.max(0, Math.min(this.root.game_map.$canvas.width() - this.width, this.x));
+            }
+        }
     }
 
     update_direction() {
-        if (this.status === FighterState.KO) return;
+        if ([FighterState.ATTACK, FighterState.HIT, FighterState.KO].includes(this.status)) return;
         const opponent = this.root.players[1 - this.id];
         if (!opponent) return;
         this.direction = this.x < opponent.x ? 1 : -1;
@@ -539,7 +586,6 @@ export class FighterActor extends FrameActor {
 
     update_health_ui() {
         this.$hp_div.stop(true).css('width', `${this.hp}%`);
-        this.$hp.stop(true).css('width', `${this.hp}%`);
     }
 
     update_power_ui() {
@@ -560,7 +606,13 @@ export class FighterActor extends FrameActor {
                 ? Math.min(1, this.frame_current_cnt / Math.max(1, this.currentAttack.totalFrames || 1))
                 : 0;
             const frame = isAttack
-                ? Math.min(animation.frame_cnt - 1, Math.floor(attackProgress * animation.frame_cnt))
+                ? Math.min(
+                    animation.frame_cnt - 1,
+                    Math.floor(
+                        (this.currentAttack.kind === 'A' ? 0.00 : this.currentAttack.kind === 'B' ? 0.18 : this.currentAttack.kind === 'C' ? 0.38 : 0.58) * animation.frame_cnt +
+                        attackProgress * animation.frame_cnt * (this.currentAttack.special ? 0.42 : 0.30)
+                    ) % Math.max(1, animation.frame_cnt)
+                )
                 : parseInt(this.frame_current_cnt / animation.frame_rate) % animation.frame_cnt;
             const image = animation.gif.frames[frame].image;
             const poseScaleX = isAttack ? (this.currentAttack.poseScaleX || 1) : 1;
@@ -581,6 +633,7 @@ export class FighterActor extends FrameActor {
                     this.ctx.scale(-1, 1);
                     this.ctx.translate(-this.root.game_map.$canvas.width(), 0);
                     this.ctx.drawImage(
+                        image,
                         this.root.game_map.$canvas.width() - drawX - this.width - trailOffset,
                         drawY,
                         drawWidth,

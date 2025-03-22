@@ -408,6 +408,17 @@ body {
     background: #050505;
 }
 
+#kof {
+    --kof-scale: 1;
+    --kof-shake-x: 0px;
+    --kof-shake-y: 0px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform-origin: center center;
+    transform: translate(calc(-50% + var(--kof-shake-x)), calc(-50% + var(--kof-shake-y))) scale(var(--kof-scale));
+}
+
 #kof,
 #kof * {
     image-rendering: pixelated;
@@ -432,6 +443,16 @@ body {
     background:
         repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0, rgba(255,255,255,.035) 1px, transparent 1px, transparent 4px),
         radial-gradient(circle at 50% 45%, rgba(120,0,0,.22), transparent 54%);
+}
+
+#kof .kof-flow-screen::after,
+#kof .kof-help-overlay::after,
+#kof .kof-character-select::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 2px solid rgba(225, 205, 128, .18);
+    pointer-events: none;
 }
 
 #kof .kof-logo,
@@ -501,10 +522,15 @@ body {
 }
 
 #kof .kof-menu-button:hover::before,
-#kof .kof-menu-button:focus::before {
+#kof .kof-menu-button:focus::before,
+#kof .kof-menu-button.kof-menu-active::before {
     content: "▶";
     position: absolute;
     left: 34px;
+    color: #f7df34;
+}
+
+#kof .kof-menu-button.kof-menu-active {
     color: #f7df34;
 }
 
@@ -577,25 +603,119 @@ body {
 }
 
 #kof .kof-select-card {
-    width: 188px;
-    height: 214px;
-    border: 5px solid #dedec9;
-    background-color: #101010;
-    background-position: center 20px;
-    background-size: auto 154px;
+    position: relative;
+    width: 176px;
+    height: 198px;
+    border: 3px solid #b9b49a;
+    background-color: #080808;
+    background-position: center 12px;
+    background-size: auto 164px;
     font-family: "Courier New", monospace;
-    font-size: 26px;
-    box-shadow: 5px 5px 0 #000;
+    font-size: 23px;
+    box-shadow: 3px 3px 0 #000;
+    overflow: hidden;
 }
 
 #kof .kof-select-card span {
-    margin-top: 160px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 7px 4px 5px;
     background: #050505;
+    border-top: 2px solid #b9b49a;
 }
 
 #kof .kof-select-card.p1-selected { box-shadow: -9px 0 0 #2671dc, 5px 5px 0 #000; }
 #kof .kof-select-card.p2-selected { box-shadow: 9px 0 0 #cc2a20, 5px 5px 0 #000; }
 #kof .kof-select-card.p1-selected.p2-selected { box-shadow: -9px 0 0 #2671dc, 9px 0 0 #cc2a20, 5px 5px 0 #000; }
+
+#kof .kof-select-card.p1-selected,
+#kof .kof-select-card.p2-selected,
+#kof .kof-select-card.p1-selected.p2-selected {
+    border-color: #f5e266;
+}
+
+#kof .kof-select-move-panel {
+    width: 850px;
+    padding: 8px 14px;
+    border: 0;
+    border-top: 2px solid #6d674b;
+    border-bottom: 2px solid #6d674b;
+    background: transparent;
+    box-shadow: none;
+}
+
+#kof .kof-select-moves {
+    font-size: 12px;
+    color: #d7d1aa;
+}
+
+#kof .kof-select-help {
+    color: #f0df76;
+    font: bold 13px "Courier New", monospace;
+    animation: kofStartBlink 900ms steps(1, end) infinite;
+}
+
+#kof .kof-head {
+    top: 10px;
+}
+
+#kof .kof-head-hp-0,
+#kof .kof-head-hp-1 {
+    height: 28px;
+    border: 3px solid #eee6c6;
+    background: #261515;
+}
+
+#kof .kof-head-hp-0>div,
+#kof .kof-head-hp-1>div {
+    background: #a51919;
+}
+
+#kof .kof-head-hp-0>div>div,
+#kof .kof-head-hp-1>div>div {
+    background: #e7c51e;
+}
+
+#kof>.kof-head>.kof-head-timer {
+    height: 48px;
+    width: 74px;
+    border: 3px solid #eee6c6;
+    background: #12100c;
+    color: #f5df55;
+    font: bold 28px/42px "Arial Black", sans-serif;
+    text-shadow: 2px 2px 0 #6d160d;
+}
+
+#kof .kof-name {
+    top: 34px;
+    color: #f7e36a;
+    font-size: 20px;
+}
+
+#kof .kof-wins {
+    top: 55px;
+    color: #d8d1b0;
+}
+
+#kof .kof-power {
+    top: 62px;
+    height: 7px;
+    border-color: #d9d2b4;
+}
+
+#kof .kof-power>div {
+    background: #df6f18;
+}
+
+#kof .kof-stocks,
+#kof .kof-max {
+    top: 70px;
+    color: #f1d74d;
+    font-family: "Arial Black", sans-serif;
+}
 
 #kof .kof-battle-controls {
     bottom: 8px;

@@ -1,6 +1,6 @@
 import { FrameActor } from '../runtime/frame-actor.js';
 import { FightInput } from '../input/fight-input.js';
-import { Projectile } from '../combat/projectile.js';
+import { Projectile } from '../combat/projectile.js?v=20260826-4';
 
 export class BattleArena extends FrameActor {
     constructor(root) {
@@ -57,10 +57,20 @@ export class BattleArena extends FrameActor {
         this.hitEffects = [];
         this.shakeMs = 0;
         this.shakeStrength = 0;
+        this.superFlashMs = 0;
+        this.superFlashOwner = 0;
     }
 
     requestHitStop(durationMs) {
         this.hitStopRemaining = Math.max(this.hitStopRemaining, durationMs);
+    }
+
+    triggerSuperFlash(ownerId, durationMs = 300) {
+        this.superFlashOwner = ownerId;
+        this.superFlashMs = Math.max(this.superFlashMs, durationMs);
+        this.requestHitStop(Math.min(110, Math.floor(durationMs * 0.32)));
+        this.shakeMs = Math.max(this.shakeMs, durationMs);
+        this.shakeStrength = Math.max(this.shakeStrength, 11);
     }
 
     addHitEffect(x, y, options = {}) {
@@ -84,6 +94,7 @@ export class BattleArena extends FrameActor {
         this.hitEffects = this.hitEffects.filter(effect => effect.life > 0);
         this.shakeMs = Math.max(0, this.shakeMs - this.timedelta);
         if (this.shakeMs <= 0) this.shakeStrength = 0;
+        this.superFlashMs = Math.max(0, this.superFlashMs - this.timedelta);
     }
 
     isHitStopped() {
@@ -216,9 +227,9 @@ export class BattleArena extends FrameActor {
 
     render() {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-        this.root.$kof.css('transform', this.shakeMs > 0
-            ? `translate(${Math.round((Math.random() - 0.5) * this.shakeStrength)}px, ${Math.round((Math.random() - 0.5) * this.shakeStrength)}px)`
-            : 'translate(0, 0)');
+        const shakeX = this.shakeMs > 0 ? Math.round((Math.random() - 0.5) * this.shakeStrength) : 0;
+        const shakeY = this.shakeMs > 0 ? Math.round((Math.random() - 0.5) * this.shakeStrength) : 0;
+        this.root.$kof.css({ '--kof-shake-x': `${shakeX}px`, '--kof-shake-y': `${shakeY}px` });
         this.hitEffects.forEach(effect => {
             const t = effect.life / effect.maxLife;
             const radius = effect.size * (1.35 - t * 0.35);
@@ -234,5 +245,17 @@ export class BattleArena extends FrameActor {
             this.ctx.fillRect(-7, -7, 14, 14);
             this.ctx.restore();
         });
+        if (this.superFlashMs > 0) {
+            const pulse = Math.floor(this.superFlashMs / 45) % 2 === 0;
+            this.ctx.save();
+            this.ctx.globalAlpha = pulse ? 0.28 : 0.12;
+            this.ctx.fillStyle = this.superFlashOwner === 0 ? '#fff3a6' : '#d7edff';
+            this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+            this.ctx.globalAlpha = 0.9;
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillRect(0, 0, this.ctx.canvas.width, 5);
+            this.ctx.fillRect(0, this.ctx.canvas.height - 5, this.ctx.canvas.width, 5);
+            this.ctx.restore();
+        }
     }
 }

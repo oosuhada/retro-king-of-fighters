@@ -1,6 +1,6 @@
-import { BattleArena } from '../arena/battle-arena.js';
-import { KyoFighter } from '../fighters/kyo-fighter.js';
-import { MaiFighter } from '../fighters/mai-fighter.js';
+import { BattleArena } from '../arena/battle-arena.js?v=20260826-4';
+import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-4';
+import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-4';
 import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
@@ -58,8 +58,16 @@ class KofArcade {
         this.orderLocked = [false, false];
         this.battle = null;
         this.helpOpen = false;
+        this.fitViewport = this.fitViewport.bind(this);
+        $(window).on('resize.kof-fit', this.fitViewport);
+        this.fitViewport();
         this.bindGlobalHelp();
         this.showTitle();
+    }
+
+    fitViewport() {
+        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720, 1.6);
+        this.$kof.css('--kof-scale', scale.toFixed(4));
     }
 
     clearScreenEvents() {
@@ -71,13 +79,54 @@ class KofArcade {
         this.$kof.append($(`<div class="${className}">${html}</div>`));
     }
 
+    bindArcadeMenu(selector, onChoose, onBack = null) {
+        const $items = this.$kof.find(selector);
+        let cursor = 0;
+        const render = () => {
+            $items.removeClass('kof-menu-active');
+            $items.eq(cursor).addClass('kof-menu-active');
+        };
+        const chooseCurrent = () => {
+            const $item = $items.eq(cursor);
+            if ($item.length) onChoose($item);
+        };
+        $items.each((index, element) => {
+            $(element).on('mouseenter focus', () => {
+                cursor = index;
+                render();
+            });
+            $(element).on('click', () => {
+                cursor = index;
+                chooseCurrent();
+            });
+        });
+        render();
+        $(document).on('keydown.kof-screen', event => {
+            if (['ArrowUp', 'w', 'W'].includes(event.key)) {
+                event.preventDefault();
+                cursor = (cursor - 1 + $items.length) % $items.length;
+                render();
+            }
+            if (['ArrowDown', 's', 'S'].includes(event.key)) {
+                event.preventDefault();
+                cursor = (cursor + 1) % $items.length;
+                render();
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                chooseCurrent();
+            }
+            if (event.key === 'Escape' && onBack) onBack();
+        });
+    }
+
     showTitle() {
         this.clearScreenEvents();
         this.setOverlay(`
             <div class="kof-title-mark">KOF</div>
             <div class="kof-logo">THE KING<br>OF FIGHTERS</div>
             <button class="kof-menu-button kof-start">PRESS START</button>
-            <div class="kof-title-credit">1P VS CPU / 2P VS PLAYER</div>
+            <div class="kof-title-credit">© 1990s ARCADE STYLE</div>
         `);
         const next = () => this.showPlayerMode();
         this.$kof.find('.kof-start').on('click', next);
@@ -100,11 +149,7 @@ class KofArcade {
             this.playerMode = mode;
             this.showBattleMode();
         };
-        this.$kof.find('[data-mode]').on('click', event => choose($(event.currentTarget).data('mode')));
-        $(document).on('keydown.kof-screen', event => {
-            if (event.key === '1') choose('one');
-            if (event.key === '2') choose('two');
-        });
+        this.bindArcadeMenu('[data-mode]', $item => choose($item.data('mode')));
     }
 
     showBattleMode() {
@@ -136,11 +181,8 @@ class KofArcade {
             }
             this.showControls();
         };
-        this.$kof.find('[data-battle]').on('click', event => choose($(event.currentTarget).data('battle')));
         this.$kof.find('.kof-back').on('click', () => this.showPlayerMode());
-        $(document).on('keydown.kof-screen', event => {
-            if (event.key === 'Escape') this.showPlayerMode();
-        });
+        this.bindArcadeMenu('[data-battle]', $item => choose($item.data('battle')), () => this.showPlayerMode());
     }
 
     showDifficulty() {
@@ -158,14 +200,8 @@ class KofArcade {
             this.cpuDifficulty = difficulty;
             this.showControls();
         };
-        this.$kof.find('[data-difficulty]').on('click', event => choose($(event.currentTarget).data('difficulty')));
         this.$kof.find('.kof-back').on('click', () => this.showBattleMode());
-        $(document).on('keydown.kof-screen', event => {
-            if (event.key === '1') choose('easy');
-            if (event.key === '2') choose('normal');
-            if (event.key === '3') choose('hard');
-            if (event.key === 'Escape') this.showBattleMode();
-        });
+        this.bindArcadeMenu('[data-difficulty]', $item => choose($item.data('difficulty')), () => this.showBattleMode());
     }
 
     showControls() {
@@ -218,11 +254,7 @@ class KofArcade {
     }
 
     battleControlStrip() {
-        return `<div class="kof-battle-controls">
-            <span>1P <b>WASD</b> · <b>J K U I</b></span>
-            <span>${this.playerMode === 'one' ? `CPU <b>${this.cpuDifficulty.toUpperCase()}</b>` : '2P <b>ARROWS</b> · <b>1 2 4 5</b>'}</span>
-            <span><b>H / ?</b> CONTROLS + MOVES</span>
-        </div>`;
+        return '';
     }
 
     resetSelection() {
@@ -287,7 +319,7 @@ class KofArcade {
                 <strong class="kof-select-move-title"></strong>
                 <div class="kof-select-moves"></div>
             </div>
-            <div class="kof-select-help">1P A/D + F PICK, R UNDO ${this.playerMode === 'two' ? '&nbsp;&nbsp; 2P ←/→ + ENTER PICK, BACKSPACE UNDO' : ''}</div>
+            <div class="kof-select-help">A / D MOVE · F DECIDE${this.playerMode === 'two' ? '&nbsp;&nbsp; 2P ← / → MOVE · ENTER DECIDE' : ''}</div>
         `, 'kof-character-select');
         this.render_character_select();
         $(document).on('keydown.kof-select', event => {
