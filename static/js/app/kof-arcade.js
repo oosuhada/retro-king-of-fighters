@@ -1,9 +1,10 @@
-import { BattleArena } from '../arena/battle-arena.js?v=20260826-4';
+import { BattleArena } from '../arena/battle-arena.js?v=20260826-6';
 import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-5';
 import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-5';
 import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
+import { drawPixelText } from '../ui/pixel-font.js?v=20260826-6';
 
 const ROSTER = [
     { name: 'MAI', FighterClass: MaiFighter, asset: 'mai', style: 'MOBILE PROJECTILE / RUSH', profile: { walkSpeed: 410, projectileSpeed: 560, damageScale: 1 } },
@@ -58,6 +59,7 @@ class KofArcade {
         this.orderLocked = [false, false];
         this.battle = null;
         this.helpOpen = false;
+        this.pauseOpen = false;
         this.fitViewport = this.fitViewport.bind(this);
         $(window).on('resize.kof-fit', this.fitViewport);
         this.fitViewport();
@@ -77,6 +79,31 @@ class KofArcade {
     setOverlay(html, className = 'kof-flow-screen') {
         this.$kof.find('.kof-flow-screen,.kof-character-select,.kof-help-overlay').remove();
         this.$kof.append($(`<div class="${className}">${html}</div>`));
+        this.pixelizeHeadings();
+    }
+
+    pixelizeHeadings() {
+        this.$kof.find('.kof-flow-title,.kof-select-title').each((_, element) => {
+            const $heading = $(element);
+            if ($heading.is('canvas')) return;
+            const text = $heading.text().trim();
+            const compact = $heading.hasClass('compact');
+            const canvas = document.createElement('canvas');
+            canvas.width = 320;
+            canvas.height = compact ? 34 : 44;
+            canvas.className = `kof-pixel-heading${compact ? ' compact' : ''}`;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            const scale = text.length > 18 ? 2 : text.length > 11 ? 3 : 4;
+            drawPixelText(ctx, text, 160, compact ? 8 : 10, {
+                scale,
+                align: 'center',
+                color: '#f5d51f',
+                shadowColor: '#71130b',
+                shadowOffset: 2,
+            });
+            $heading.replaceWith(canvas);
+        });
     }
 
     bindArcadeMenu(selector, onChoose, onBack = null) {
@@ -123,13 +150,21 @@ class KofArcade {
     showTitle() {
         this.clearScreenEvents();
         this.setOverlay(`
-            <div class="kof-title-mark">KOF</div>
-            <div class="kof-logo">THE KING<br>OF FIGHTERS</div>
-            <button class="kof-menu-button kof-start">PRESS START</button>
-            <div class="kof-title-credit">© 1990s ARCADE STYLE</div>
+            <canvas class="kof-title-pixel" width="320" height="180"></canvas>
+            <canvas class="kof-start-pixel" width="160" height="18" tabindex="0" role="button" aria-label="Press Start"></canvas>
         `);
+        const canvas = this.$kof.find('.kof-title-pixel')[0];
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        drawPixelText(ctx, 'KOF', 160, 20, { scale: 7, align: 'center', color: '#a91b12', shadowColor: '#2c0000', shadowOffset: 2 });
+        drawPixelText(ctx, 'THE KING', 160, 64, { scale: 4, align: 'center', color: '#ffd51a', shadowColor: '#8d1708', shadowOffset: 2 });
+        drawPixelText(ctx, 'OF FIGHTERS', 160, 96, { scale: 4, align: 'center', color: '#ffd51a', shadowColor: '#8d1708', shadowOffset: 2 });
+        const startCanvas = this.$kof.find('.kof-start-pixel')[0];
+        const startCtx = startCanvas.getContext('2d');
+        startCtx.imageSmoothingEnabled = false;
+        drawPixelText(startCtx, 'PRESS START', 80, 3, { scale: 2, align: 'center', color: '#ffffff', shadowColor: '#4a3725', shadowOffset: 1 });
         const next = () => this.showPlayerMode();
-        this.$kof.find('.kof-start').on('click', next);
+        this.$kof.find('.kof-start-pixel').on('click', next);
         $(document).on('keydown.kof-screen', event => {
             if (event.key === 'Enter') next();
         });
@@ -226,9 +261,45 @@ class KofArcade {
 
     bindGlobalHelp() {
         $(document).on('keydown.kof-help', event => {
-            if (!this.game_map || !['?', 'h', 'H', 'Escape'].includes(event.key)) return;
-            event.preventDefault();
-            this.toggleHelp();
+            if (!this.game_map) return;
+            if (['p', 'P', 'Escape'].includes(event.key)) {
+                event.preventDefault();
+                this.togglePause();
+                return;
+            }
+            if (['?', 'h', 'H'].includes(event.key)) {
+                event.preventDefault();
+                this.toggleHelp();
+            }
+        });
+    }
+
+    togglePause() {
+        if (!this.game_map || this.game_map.phase === 'match-over') return;
+        if (this.helpOpen) this.toggleHelp();
+        this.pauseOpen = !this.pauseOpen;
+        this.game_map.paused = this.pauseOpen;
+        this.$kof.find('.kof-pause-overlay').remove();
+        if (!this.pauseOpen) {
+            $(document).off('keydown.kof-pause-title');
+            this.game_map.$canvas.focus();
+            return;
+        }
+        const $overlay = $(`
+            <div class="kof-pause-overlay">
+                <canvas width="320" height="180"></canvas>
+            </div>
+        `);
+        this.$kof.append($overlay);
+        const ctx = $overlay.find('canvas')[0].getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        drawPixelText(ctx, 'PAUSE', 160, 38, { scale: 5, align: 'center', color: '#f5d31f', shadowColor: '#69150d', shadowOffset: 2 });
+        drawPixelText(ctx, 'P / ESC  RESUME', 160, 94, { scale: 2, align: 'center', color: '#ffffff' });
+        drawPixelText(ctx, 'H  CONTROLS', 160, 116, { scale: 2, align: 'center', color: '#d7c988' });
+        drawPixelText(ctx, 'T  TITLE', 160, 138, { scale: 2, align: 'center', color: '#d7c988' });
+        $(document).off('keydown.kof-pause-title').on('keydown.kof-pause-title', event => {
+            if (!this.pauseOpen) return;
+            if (event.key === 't' || event.key === 'T') window.location.reload();
         });
     }
 
@@ -236,18 +307,18 @@ class KofArcade {
         if (this.helpOpen) {
             this.$kof.find('.kof-help-overlay').remove();
             this.helpOpen = false;
-            if (this.game_map) this.game_map.can_fight = true;
+            if (this.game_map) this.game_map.paused = this.pauseOpen;
             return;
         }
         this.helpOpen = true;
-        if (this.game_map) this.game_map.can_fight = false;
+        if (this.game_map) this.game_map.paused = true;
         this.$kof.append($(`
             <div class="kof-help-overlay">
                 <div class="kof-flow-title compact">CONTROLS & MOVE LIST</div>
                 ${CONTROLS_HTML}
                 <div class="kof-move-list">UNIVERSAL · ↓+BACK LOW GUARD · ↓+ATTACK CROUCH NORMAL · JUMP+ATTACK AIR NORMAL · NEAR+←/→+C/D THROW · C/D THROW TECH · ↑↑ HOP · ↓↑ SUPER JUMP</div>
                 <div class="kof-move-list">KYO/MAI · ↓↘→ + A/C PROJECTILE · →↓↘ + A/C ANTI-AIR · ↓↙← + B/D RUSH · ↓↘→ ↓↘→ + A/C SUPER</div>
-                <button class="kof-menu-button kof-close-help">ESC / H · RESUME</button>
+                <button class="kof-menu-button kof-close-help">H / ? · CLOSE</button>
             </div>
         `));
         this.$kof.find('.kof-close-help').on('click', () => this.toggleHelp());
@@ -298,8 +369,26 @@ class KofArcade {
 
     prepareCpuChoices() {
         if (this.playerMode !== 'one') return;
-        if (this.matchKind === 'single') this.teamChoices[1] = [this.cpuDifficulty === 'dummy' ? 0 : 1];
-        else this.teamChoices[1] = [1, 0, 3];
+        const playerPicks = this.teamChoices[0];
+        if (playerPicks.length < this.requiredPicks()) {
+            this.teamChoices[1] = [];
+            return;
+        }
+        if (this.matchKind === 'single') {
+            const playerIndex = playerPicks[0];
+            const playerAsset = ROSTER[playerIndex].asset;
+            const differentAsset = ROSTER.map((fighter, index) => ({ fighter, index }))
+                .filter(entry => entry.fighter.asset !== playerAsset);
+            const pool = differentAsset.length ? differentAsset : ROSTER.map((fighter, index) => ({ fighter, index })).filter(entry => entry.index !== playerIndex);
+            const choice = pool[Math.floor(Math.random() * pool.length)]?.index ?? ((playerIndex + 1) % ROSTER.length);
+            this.teamChoices[1] = [choice];
+            return;
+        }
+        const pool = ROSTER.map((fighter, index) => index).sort(() => Math.random() - 0.5);
+        const playerLeadAsset = ROSTER[playerPicks[0]].asset;
+        const differentLeadIndex = pool.findIndex(index => ROSTER[index].asset !== playerLeadAsset);
+        if (differentLeadIndex > 0) [pool[0], pool[differentLeadIndex]] = [pool[differentLeadIndex], pool[0]];
+        this.teamChoices[1] = pool.slice(0, 3);
     }
 
     selectionComplete() {
@@ -308,7 +397,7 @@ class KofArcade {
     }
 
     show_character_select() {
-        this.prepareCpuChoices();
+        if (this.playerMode === 'one') this.teamChoices[1] = [];
         const required = this.requiredPicks();
         const cards = ROSTER.map((fighter, index) => `<div class="kof-select-card" data-roster-index="${index}" data-asset="${fighter.asset}"><span>${fighter.name}</span></div>`).join('');
         this.setOverlay(`
@@ -333,6 +422,7 @@ class KofArcade {
                 if (event.key === 'Enter') this.add_team_pick(1);
                 if (event.key === 'Backspace') this.remove_team_pick(1);
             }
+            if (this.playerMode === 'one') this.prepareCpuChoices();
             this.render_character_select();
             if (this.selectionComplete()) {
                 $(document).off('keydown.kof-select');
@@ -362,6 +452,7 @@ class KofArcade {
                 <div class="kof-order-vs">VS</div>
                 <div class="kof-order-side"><div class="kof-order-label">${this.playerMode === 'one' ? 'CPU' : '2P'}</div><div class="kof-order-team kof-order-team-1"></div><div class="kof-order-ready kof-order-ready-1"></div><div class="kof-order-help">${this.playerMode === 'one' ? 'AUTO ORDER' : '← / → ROTATE · ENTER READY'}</div></div>
             </div>`);
+        this.pixelizeHeadings();
         this.render_order_select();
         $(document).on('keydown.kof-order', event => {
             if (!this.orderLocked[0]) {

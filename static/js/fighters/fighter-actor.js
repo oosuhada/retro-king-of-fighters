@@ -557,6 +557,10 @@ export class FighterActor extends FrameActor {
     }
 
     update() {
+        if (this.root.game_map.paused) {
+            this.render(false);
+            return;
+        }
         if (this.root.game_map.isHitStopped()) {
             this.render(false);
             return;

@@ -42,6 +42,10 @@ export class Projectile extends FrameActor {
 
     update() {
         if (this.destroyed) return;
+        if (this.gameMap.paused) {
+            this.render();
+            return;
+        }
         if (this.gameMap.isHitStopped()) {
             this.render();
             return;

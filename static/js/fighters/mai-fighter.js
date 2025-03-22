@@ -1,4 +1,4 @@
-import {FighterActor} from './fighter-actor.js?v=20260826-5';
+import {FighterActor} from './fighter-actor.js?v=20260826-6';
 import {GIF} from '../utils/gif.js';
 
 export class MaiFighter extends FighterActor {

@@ -253,17 +253,28 @@
 #kof .kof-round-message {
     position: absolute;
     z-index: 12;
-    top: 250px;
+    top: 205px;
     left: 0;
-    right: 0;
-    color: #ffd42a;
-    text-align: center;
-    font: italic 76px Impact, "Arial Black", sans-serif;
-    letter-spacing: 4px;
-    text-shadow: 5px 5px 0 #9b0000, -2px -2px 0 #000, 2px 2px 0 #000;
+    width: 1280px;
+    height: 240px;
     pointer-events: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
-#kof .kof-round-message small { display: block; margin-top: 18px; color: white; font: 17px monospace; letter-spacing: 1px; }
+
+#kof .kof-pause-overlay {
+    position: absolute;
+    z-index: 25;
+    inset: 0;
+    background: rgba(0, 0, 0, .68);
+}
+
+#kof .kof-pause-overlay canvas {
+    width: 1280px;
+    height: 720px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
 
 #kof .kof-move-callout {
     position: absolute;
@@ -497,6 +508,50 @@ body {
     color: #d4d0a9;
     font: 15px "Courier New", monospace;
     letter-spacing: 2px;
+}
+
+#kof .kof-title-pixel {
+    position: absolute;
+    inset: 0;
+    width: 1280px;
+    height: 720px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#kof .kof-start-pixel {
+    position: absolute;
+    z-index: 3;
+    left: 320px;
+    top: 492px;
+    width: 640px;
+    height: 72px;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    animation: kofStartBlink 780ms steps(1, end) infinite;
+}
+
+#kof .kof-pixel-heading {
+    display: block;
+    width: 960px;
+    height: 132px;
+    margin: 34px auto 18px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#kof .kof-pixel-heading.compact {
+    width: 800px;
+    height: 85px;
+    margin: 0 auto 14px;
+}
+
+#kof .kof-character-select .kof-pixel-heading {
+    margin-top: 26px;
+    margin-bottom: 8px;
 }
 
 #kof .kof-menu-button {

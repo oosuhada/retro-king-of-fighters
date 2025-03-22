@@ -1,6 +1,7 @@
 import { FrameActor } from '../runtime/frame-actor.js';
 import { FightInput } from '../input/fight-input.js';
-import { Projectile } from '../combat/projectile.js?v=20260826-4';
+import { Projectile } from '../combat/projectile.js?v=20260826-6';
+import { drawPixelText } from '../ui/pixel-font.js?v=20260826-6';
 
 export class BattleArena extends FrameActor {
     constructor(root) {
@@ -37,7 +38,7 @@ export class BattleArena extends FrameActor {
             </div>`
         ));
 
-        this.root.$kof.append($('<div class="kof-round-message"></div>'));
+        this.root.$kof.append($('<canvas class="kof-round-message" width="640" height="120"></canvas>'));
         this.root.$kof.append($('<div class="kof-move-callout kof-move-callout-0"></div>'));
         this.root.$kof.append($('<div class="kof-move-callout kof-move-callout-1"></div>'));
         this.root.$kof.append($('<div class="kof-combo-callout kof-combo-callout-0"></div>'));
@@ -47,6 +48,8 @@ export class BattleArena extends FrameActor {
         this.time_left = 60000;  //unit in ms
         this.$timer = this.root.$kof.find(".kof-head-timer");
         this.$message = this.root.$kof.find('.kof-round-message');
+        this.messageCtx = this.$message[0].getContext('2d');
+        this.messageCtx.imageSmoothingEnabled = false;
         this.phase = 'intro';
         this.phase_left = 2200;
         this.can_fight = false;
@@ -59,6 +62,16 @@ export class BattleArena extends FrameActor {
         this.shakeStrength = 0;
         this.superFlashMs = 0;
         this.superFlashOwner = 0;
+        this.paused = false;
+    }
+
+    setMessage(text = '', small = '') {
+        const ctx = this.messageCtx;
+        ctx.clearRect(0, 0, 640, 120);
+        if (!text) return;
+        const scale = text.length > 14 ? 4 : 6;
+        drawPixelText(ctx, text, 320, 28, { scale, align: 'center', color: '#f8d42a', shadowColor: '#6f0d08', shadowOffset: 3 });
+        if (small) drawPixelText(ctx, small, 320, 86, { scale: 2, align: 'center', color: '#ffffff', shadowColor: '#000000', shadowOffset: 1 });
     }
 
     requestHitStop(durationMs) {
@@ -126,7 +139,7 @@ export class BattleArena extends FrameActor {
         this.round_resolved = false;
         this.time_left = 60000;
         this.$timer.text('60');
-        this.$message.text(`ROUND ${this.root.battle.round}`);
+        this.setMessage(`ROUND ${this.root.battle.round}`);
         this.clearProjectiles();
 
         const readyGo = new Audio('static/images/audio/readygo.wav');
@@ -144,7 +157,7 @@ export class BattleArena extends FrameActor {
         if (b.hp > a.hp) winner = 1;
         const winnerName = winner === null ? null : this.root.players[winner]?.characterName;
         this.team_result = this.root.resolve_match_round(winner, this.time_left);
-        this.$message.text(winner === null ? 'DRAW GAME' : `${winnerName} WINS`);
+        this.setMessage(winner === null ? 'DRAW GAME' : `${winnerName} WINS`);
         this.phase = 'result';
         this.phase_left = 2600;
     }
@@ -153,13 +166,14 @@ export class BattleArena extends FrameActor {
         if (this.team_result?.matchOver) {
             this.phase = 'match-over';
             this.can_fight = false;
-            this.$message.text(
+            const finalMessage = (
                 this.team_result.matchWinner === null
                     ? 'DRAW GAME'
                     : `PLAYER ${this.team_result.matchWinner + 1} WINS`
             );
+            this.setMessage(finalMessage);
             window.setTimeout(() => {
-                this.$message.html(`${this.$message.text()}<small>PRESS ENTER · TITLE</small>`);
+                this.setMessage(finalMessage, 'PRESS ENTER - TITLE');
                 $(document).one('keydown.kof-restart', event => {
                     if (event.key === 'Enter') window.location.reload();
                 });
@@ -187,6 +201,10 @@ export class BattleArena extends FrameActor {
     }
 
     update() {
+        if (this.paused) {
+            this.render();
+            return;
+        }
         this.updateHitEffects();
         if (this.hitStopRemaining > 0) {
             this.hitStopRemaining = Math.max(0, this.hitStopRemaining - this.timedelta);
@@ -195,12 +213,12 @@ export class BattleArena extends FrameActor {
         }
         if (this.phase === 'intro') {
             this.phase_left -= this.timedelta;
-            if (this.phase_left <= 1200 && this.phase_left > 500) this.$message.text('READY');
-            if (this.phase_left <= 500 && this.phase_left > 0) this.$message.text('GO!');
+            if (this.phase_left <= 1200 && this.phase_left > 500) this.setMessage('READY');
+            if (this.phase_left <= 500 && this.phase_left > 0) this.setMessage('GO!');
             if (this.phase_left <= 0) {
                 this.phase = 'fight';
                 this.can_fight = true;
-                this.$message.text('');
+                this.setMessage('');
             }
             this.render();
             return;
