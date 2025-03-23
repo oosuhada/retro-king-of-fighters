@@ -1,6 +1,6 @@
 import { BattleArena } from '../arena/battle-arena.js?v=20260826-6';
-import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-5';
-import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-5';
+import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-8';
+import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-8';
 import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';

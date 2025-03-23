@@ -61,6 +61,7 @@ export class FighterActor extends FrameActor {
         this.gravity = 50;
         this.status = FighterState.JUMP;
         this.animations = new Map();
+        this.attackAnimations = new Map();
         this.frame_current_cnt = 0;
         this.input = info.controller || this.root.game_map.input;
         this.controls = info.controls || PLAYER_CONTROLS[this.id];
@@ -123,6 +124,16 @@ export class FighterActor extends FrameActor {
             characterTotalAdjust: tuning.total,
             characterPoseShift: tuning.poseShift,
         };
+    }
+
+    attackAnimationKey(kind, specialName = '') {
+        const name = String(specialName || '').toUpperCase();
+        if (name.includes('KACHOSEN') || name.includes('YAMI BARAI')) return 'special-projectile';
+        if (name.includes('SHINOBI BACHI')) return 'special-dive';
+        if (name.includes('RYU ENBU') || name.includes('KOTOTSUKI') || name.includes('ONIYAKI') || name.includes('OROCHINAGI')) return 'special-rush';
+        if (this.status === FighterState.JUMP) return `jump-${kind.toLowerCase()}`;
+        if (this.status === FighterState.CROUCH) return `crouch-${kind.toLowerCase()}`;
+        return `stand-${kind.toLowerCase()}`;
     }
 
     hurtbox() {
@@ -237,6 +248,7 @@ export class FighterActor extends FrameActor {
         const normal = this.attackProfile(kind);
         const timing = ATTACK_TIMING[kind];
         const maxMultiplier = this.maxModeMs > 0 ? 1.25 : 1;
+        const animationKey = this.attackAnimationKey(kind, special?.name);
         this.currentAttack = {
             ...normal,
             kind,
@@ -259,6 +271,7 @@ export class FighterActor extends FrameActor {
             poseScaleX: special ? timing.poseScaleX + 0.08 : timing.poseScaleX,
             poseScaleY: special ? timing.poseScaleY + 0.03 : timing.poseScaleY,
             poseShift: (special ? timing.poseShift + 8 : timing.poseShift) + (normal.characterPoseShift || 0),
+            animationKey,
         };
         this.status = FighterState.ATTACK;
         this.frame_current_cnt = 0;
@@ -602,14 +615,19 @@ export class FighterActor extends FrameActor {
         let animationStatus = this.status;
         if (this.status === FighterState.WALK && this.direction * this.vx < 0) animationStatus = FighterState.WALK_BACK;
         if (this.status === FighterState.CROUCH || this.status === FighterState.GUARD) animationStatus = FighterState.IDLE;
-        const animation = this.animations.get(animationStatus);
+        const attackAnimation = this.status === FighterState.ATTACK
+            ? this.attackAnimations.get(this.currentAttack.animationKey)
+            : null;
+        const animation = attackAnimation || this.animations.get(animationStatus);
 
         if (animation?.loaded) {
             const isAttack = this.status === FighterState.ATTACK;
             const attackProgress = isAttack
                 ? Math.min(1, this.frame_current_cnt / Math.max(1, this.currentAttack.totalFrames || 1))
                 : 0;
-            const frame = isAttack
+            const frame = isAttack && attackAnimation
+                ? Math.min(animation.frame_cnt - 1, Math.floor(attackProgress * animation.frame_cnt))
+                : isAttack
                 ? Math.min(
                     animation.frame_cnt - 1,
                     Math.floor(

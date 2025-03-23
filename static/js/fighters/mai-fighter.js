@@ -1,4 +1,4 @@
-import {FighterActor} from './fighter-actor.js?v=20260826-6';
+import {FighterActor} from './fighter-actor.js?v=20260826-8';
 import {GIF} from '../utils/gif.js';
 
 export class MaiFighter extends FighterActor {
@@ -6,6 +6,7 @@ export class MaiFighter extends FighterActor {
         super(root, info);
 
         this.init_animations();
+        this.init_attack_animations();
     }
 
     init_animations() {
@@ -62,5 +63,31 @@ export class MaiFighter extends FighterActor {
                 }
             }
         }
+    }
+
+    init_attack_animations() {
+        const names = [
+            'stand-a', 'stand-b', 'stand-c', 'stand-d',
+            'crouch-a', 'crouch-b', 'crouch-c', 'crouch-d',
+            'jump-a', 'jump-b', 'jump-c', 'jump-d',
+            'special-projectile', 'special-rush', 'special-dive',
+        ];
+        names.forEach(name => {
+            const gif = GIF();
+            gif.load(`static/images/player/mai/attacks/${name}.gif?v=20260826-7`);
+            const animation = {
+                gif,
+                frame_cnt: 0,
+                frame_rate: 2,
+                offset_y: -66,
+                loaded: false,
+                scale: 1.55,
+            };
+            this.attackAnimations.set(name, animation);
+            gif.onload = () => {
+                animation.frame_cnt = gif.frames.length;
+                animation.loaded = true;
+            };
+        });
     }
 }
