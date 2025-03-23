@@ -793,3 +793,326 @@ body {
 #kof .kof-power {
     image-rendering: pixelated;
 }
+
+/* 2026-08-26 arcade pass: DOM is only layout/input; visible menu copy is bitmap canvas. */
+#kof .kof-inline-pixel,
+#kof .kof-key-pixel,
+#kof .kof-menu-button canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#kof .kof-menu-button {
+    width: 430px;
+    min-width: 0;
+    min-height: 66px;
+    padding: 8px 26px 7px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+#kof .kof-menu-button canvas {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+#kof .kof-menu-button canvas[data-kind="main"] {
+    max-width: 430px;
+}
+
+#kof .kof-menu-button canvas[data-kind="sub"] {
+    max-width: 430px;
+    margin-top: 2px;
+}
+
+#kof .kof-menu-button::before {
+    content: "" !important;
+}
+
+#kof .kof-menu-button.kof-menu-active::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 24px;
+    width: 12px;
+    height: 12px;
+    background: #f7df34;
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+    animation: kofCursorBlink 520ms steps(1, end) infinite;
+}
+
+@keyframes kofCursorBlink {
+    0%, 64% { opacity: 1; }
+    65%, 100% { opacity: 0; }
+}
+
+#kof .kof-text-button {
+    min-width: 180px;
+    margin-top: 42px;
+    padding: 8px 14px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+#kof .kof-text-button .kof-inline-pixel {
+    width: auto;
+    height: 28px;
+    margin: 0 auto;
+}
+
+#kof .kof-flow-note .kof-inline-pixel,
+#kof .kof-cpu-note .kof-inline-pixel,
+#kof .kof-move-list .kof-inline-pixel {
+    width: auto;
+    height: 22px;
+    margin: 0 auto;
+}
+
+#kof .kof-howto-board {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 3px 1fr;
+    width: 1040px;
+    margin: 0 auto;
+    padding: 14px 18px 12px;
+    border-top: 4px solid #d8c979;
+    border-bottom: 4px solid #6f5c25;
+    background: #070707;
+    box-shadow: inset 0 3px 0 #302912, 6px 6px 0 #000;
+    box-sizing: border-box;
+}
+
+#kof .kof-howto-board::before,
+#kof .kof-howto-board::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #8d762f;
+}
+
+#kof .kof-howto-board::before { left: 0; }
+#kof .kof-howto-board::after { right: 0; }
+
+#kof .kof-howto-divider {
+    background: repeating-linear-gradient(to bottom, #827038 0 8px, #201b0d 8px 14px);
+}
+
+#kof .kof-control-column {
+    padding: 0 24px 2px;
+}
+
+#kof .kof-pixel-label {
+    height: 31px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #5e512a;
+}
+
+#kof .kof-pixel-label .kof-inline-pixel {
+    width: auto;
+    height: 27px;
+    margin: 0 auto;
+}
+
+#kof .kof-key-row {
+    display: flex;
+    align-items: center;
+    min-height: 33px;
+    margin: 0;
+    gap: 5px;
+    border-bottom: 1px dashed #3b3828;
+}
+
+#kof .kof-key-row i {
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 24px;
+    border: 2px solid #d2c99d;
+    border-right-color: #655e43;
+    border-bottom-color: #655e43;
+    background: #10100e;
+    box-sizing: border-box;
+    font-style: normal;
+}
+
+#kof .kof-key-row i:has(canvas[width^="4"]),
+#kof .kof-key-row i:has(canvas[width^="5"]) {
+    min-width: 44px;
+}
+
+#kof .kof-key-row .kof-key-pixel {
+    width: auto;
+    height: 16px;
+}
+
+#kof .kof-key-row > span {
+    margin-left: 8px;
+    overflow: hidden;
+}
+
+#kof .kof-key-row > span .kof-inline-pixel {
+    width: auto;
+    height: 17px;
+}
+
+#kof .kof-command-help {
+    width: 1060px;
+    margin: 12px auto 8px;
+    padding: 7px 0;
+    border-top: 2px solid #494326;
+    border-bottom: 2px solid #494326;
+}
+
+#kof .kof-command-help > div {
+    height: 16px;
+    margin: 2px 0;
+}
+
+#kof .kof-command-help .kof-inline-pixel {
+    width: auto;
+    height: 14px;
+    margin: 0 auto;
+}
+
+#kof .kof-cpu-note {
+    height: 22px;
+    margin: 7px 0 3px;
+}
+
+#kof [data-continue] {
+    width: 300px;
+    margin-top: 2px;
+}
+
+#kof .kof-help-overlay {
+    padding-top: 34px;
+}
+
+#kof .kof-help-overlay .kof-pixel-heading.compact {
+    height: 70px;
+    margin-bottom: 5px;
+}
+
+#kof .kof-help-overlay .kof-howto-board {
+    transform: scale(.88);
+    transform-origin: top center;
+    margin-bottom: -40px;
+}
+
+#kof .kof-help-overlay .kof-command-help {
+    display: none;
+}
+
+#kof .kof-help-overlay .kof-move-list {
+    height: 20px;
+    margin: 7px auto;
+    padding: 0;
+    border: 0;
+}
+
+#kof .kof-help-overlay [data-close-help] {
+    width: 280px;
+    margin-top: 8px;
+}
+
+#kof .kof-select-card {
+    border-radius: 0;
+}
+
+#kof .kof-select-card span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0;
+    background: #050505;
+}
+
+#kof .kof-select-card span .kof-inline-pixel {
+    width: auto;
+    height: 25px;
+}
+
+#kof .kof-select-status {
+    width: 980px;
+    min-height: 30px;
+    margin: 24px auto 0;
+    align-items: center;
+}
+
+#kof .kof-select-status > span {
+    width: 48%;
+    min-height: 22px;
+}
+
+#kof .kof-select-status .kof-inline-pixel {
+    width: auto;
+    max-width: 100%;
+    height: 20px;
+}
+
+#kof .kof-select-p1 .kof-inline-pixel { margin-right: auto; }
+#kof .kof-select-p2 .kof-inline-pixel { margin-left: auto; }
+
+#kof .kof-select-move-title {
+    min-height: 22px;
+}
+
+#kof .kof-select-move-title .kof-inline-pixel {
+    width: auto;
+    height: 18px;
+    margin: 0 auto;
+}
+
+#kof .kof-select-moves {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 16px;
+}
+
+#kof .kof-select-moves span {
+    min-height: 14px;
+}
+
+#kof .kof-select-moves .kof-inline-pixel {
+    width: auto;
+    max-width: 100%;
+    height: 13px;
+    margin: 0 auto;
+}
+
+#kof .kof-select-help {
+    min-height: 20px;
+    margin-top: 12px;
+    animation: kofStartBlink 900ms steps(1, end) infinite;
+}
+
+#kof .kof-select-help .kof-inline-pixel {
+    width: auto;
+    height: 17px;
+    margin: 0 auto;
+}
+
+#kof .kof-pause-overlay {
+    background: rgba(0, 0, 0, .78);
+}
+
+#kof .kof-pause-overlay::before,
+#kof .kof-pause-overlay::after {
+    content: "";
+    position: absolute;
+    left: 220px;
+    right: 220px;
+    height: 5px;
+    background: repeating-linear-gradient(to right, #d9bd42 0 22px, #5c4b17 22px 34px);
+}
+
+#kof .kof-pause-overlay::before { top: 190px; }
+#kof .kof-pause-overlay::after { bottom: 190px; }
