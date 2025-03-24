@@ -66,7 +66,7 @@ export class KyoFighter extends FighterActor {
         ];
         names.forEach(name => {
             const gif = GIF();
-            gif.load(`static/images/player/kyo/attacks/${name}.gif?v=20260826-7`);
+            gif.load(`static/images/player/kyo/attacks/${name}.gif?v=20260826-8`);
             const animation = {
                 gif,
                 frame_cnt: 0,
