@@ -5,6 +5,7 @@ import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
 import { drawPixelText } from '../ui/pixel-font.js?v=20260826-7';
+import { MobileController } from '../input/mobile-controller.js?v=20260826-9';
 
 const ROSTER = [
     { name: 'MAI', FighterClass: MaiFighter, asset: 'mai', style: 'MOBILE PROJECTILE / RUSH', profile: { walkSpeed: 410, projectileSpeed: 560, damageScale: 1 } },
@@ -68,6 +69,7 @@ class KofArcade {
         this.fitViewport();
         document.addEventListener('keydown', this.handleGlobalKeydown, true);
         this.showTitle();
+        this.mobileController = new MobileController(this);
     }
 
     fitViewport() {
