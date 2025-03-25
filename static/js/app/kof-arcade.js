@@ -5,7 +5,7 @@ import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
 import { drawPixelText } from '../ui/pixel-font.js?v=20260826-7';
-import { MobileController } from '../input/mobile-controller.js?v=20260826-10';
+import { MobileController } from '../input/mobile-controller.js?v=20260826-11';
 
 const ROSTER = [
     { name: 'MAI', FighterClass: MaiFighter, asset: 'mai', style: 'MOBILE PROJECTILE / RUSH', profile: { walkSpeed: 410, projectileSpeed: 560, damageScale: 1 } },
@@ -73,11 +73,13 @@ class KofArcade {
     }
 
     fitViewport() {
-        const isPortraitTouch = document.body.classList.contains('kof-touch-device') && window.innerHeight > window.innerWidth;
+        const isTouch = window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+        const isPortraitTouch = isTouch && window.innerHeight > window.innerWidth;
         const availableWidth = isPortraitTouch ? window.innerHeight : window.innerWidth;
         const availableHeight = isPortraitTouch ? window.innerWidth : window.innerHeight;
         const scale = Math.min(availableWidth / 1280, availableHeight / 720, 1.6);
         this.$kof.css('--kof-scale', scale.toFixed(4));
+        $('#kof-stage').css('--kof-mobile-scale', scale.toFixed(4));
     }
 
     clearScreenEvents() {

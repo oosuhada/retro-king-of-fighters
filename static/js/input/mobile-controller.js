@@ -22,13 +22,8 @@ export class MobileController {
     }
 
     render() {
-        document.body.insertAdjacentHTML('beforeend', `
-            <div class="kof-mobile-rotate" aria-hidden="true" hidden>
-                <div class="kof-mobile-rotate-icon">↻</div>
-                <strong>ROTATE DEVICE</strong>
-                <span>LANDSCAPE MODE</span>
-                <button type="button" class="kof-mobile-landscape-request" tabindex="-1">TAP FOR LANDSCAPE</button>
-            </div>
+        const stage = document.querySelector('#kof-stage') || document.body;
+        stage.insertAdjacentHTML('beforeend', `
             <div class="kof-mobile-controller" aria-label="Mobile game controls">
                 <div class="kof-mobile-topbar">
                     <button type="button" data-mobile-command="Escape">BACK</button>
@@ -51,8 +46,6 @@ export class MobileController {
             </div>
         `);
         this.controller = document.querySelector('.kof-mobile-controller');
-        this.rotateNotice = document.querySelector('.kof-mobile-rotate');
-        this.landscapeButton = document.querySelector('.kof-mobile-landscape-request');
     }
 
     currentTarget() {
@@ -96,22 +89,6 @@ export class MobileController {
     }
 
     bind() {
-        this.landscapeButton.addEventListener('click', async () => {
-            try {
-                if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-                    await document.documentElement.requestFullscreen();
-                }
-            } catch (_) {
-                // Fullscreen is optional; orientation can still change manually.
-            }
-            try {
-                if (screen.orientation?.lock) await screen.orientation.lock('landscape');
-            } catch (_) {
-                // iOS and some browsers do not expose orientation lock for normal web apps.
-            }
-            this.updateVisibility();
-        });
-
         this.controller.querySelectorAll('[data-mobile-button]').forEach(element => {
             element.addEventListener('pointerdown', event => {
                 event.preventDefault();
@@ -151,6 +128,5 @@ export class MobileController {
         document.body.classList.toggle('kof-mobile-portrait', this.isTouchDevice && portrait);
         this.root.fitViewport?.();
         this.controller.setAttribute('aria-hidden', String(!this.isTouchDevice));
-        this.rotateNotice.setAttribute('aria-hidden', 'true');
     }
 }

@@ -419,30 +419,8 @@ body {
     background: #050505;
 }
 
-body.kof-touch-device.kof-mobile-portrait #kof {
-    left: 50%;
-    top: 50%;
-    transform-origin: center center;
-    transform:
-        translate(calc(-50% + var(--kof-shake-x)), calc(-50% + var(--kof-shake-y)))
-        rotate(90deg)
-        scale(var(--kof-scale));
-}
-
-body.kof-touch-device.kof-mobile-portrait .kof-mobile-controller {
-    display: block !important;
-    width: 100vh;
-    height: 100vw;
-    left: 50%;
-    top: 50%;
-    right: auto;
-    bottom: auto;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center center;
-}
-
-body.kof-touch-device.kof-mobile-portrait .kof-mobile-rotate {
-    display: none !important;
+.kof-stage {
+    display: contents;
 }
 
 #kof {
@@ -1143,9 +1121,8 @@ body.kof-touch-device.kof-mobile-portrait .kof-mobile-rotate {
 #kof .kof-pause-overlay::before { top: 190px; }
 #kof .kof-pause-overlay::after { bottom: 190px; }
 
-/* Mobile landscape controller. It lives outside the scaled game surface so touch targets stay usable. */
-.kof-mobile-controller,
-.kof-mobile-rotate {
+/* Mobile game and controls share the same 1280x720 coordinate system. */
+.kof-mobile-controller {
     display: none;
 }
 
@@ -1155,14 +1132,6 @@ body.kof-touch-device {
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
-}
-
-body.kof-touch-device:not(.kof-mobile-portrait) .kof-mobile-controller {
-    position: fixed;
-    z-index: 1000;
-    inset: 0;
-    display: block;
-    pointer-events: none;
 }
 
 .kof-mobile-controller button {
@@ -1190,51 +1159,51 @@ body.kof-touch-device:not(.kof-mobile-portrait) .kof-mobile-controller {
 
 .kof-mobile-topbar {
     position: absolute;
-    top: max(8px, env(safe-area-inset-top));
+    top: 22px;
     left: 50%;
     display: flex;
-    gap: 8px;
+    gap: 18px;
     transform: translateX(-50%);
     pointer-events: none;
 }
 
 .kof-mobile-topbar button {
-    min-width: 58px;
-    height: 30px;
-    padding: 0 8px;
+    min-width: 150px;
+    height: 82px;
+    padding: 0 18px;
     border-radius: 2px;
-    font-size: 10px;
-    opacity: .78;
+    font-size: 20px;
+    opacity: .72;
 }
 
 .kof-mobile-dpad {
     position: absolute;
-    left: max(18px, env(safe-area-inset-left));
-    bottom: max(16px, env(safe-area-inset-bottom));
-    width: 162px;
-    height: 162px;
+    left: 34px;
+    bottom: 30px;
+    width: 290px;
+    height: 290px;
     pointer-events: none;
 }
 
 .kof-mobile-dpad button {
     position: absolute;
-    width: 58px;
-    height: 58px;
+    width: 104px;
+    height: 104px;
     padding: 0;
-    font-size: 20px;
+    font-size: 34px;
 }
 
-.kof-mobile-dpad .up { left: 52px; top: 0; }
-.kof-mobile-dpad .left { left: 0; top: 52px; }
-.kof-mobile-dpad .down { left: 52px; top: 104px; }
-.kof-mobile-dpad .right { left: 104px; top: 52px; }
+.kof-mobile-dpad .up { left: 93px; top: 0; }
+.kof-mobile-dpad .left { left: 0; top: 93px; }
+.kof-mobile-dpad .down { left: 93px; top: 186px; }
+.kof-mobile-dpad .right { left: 186px; top: 93px; }
 
 .kof-mobile-dpad .center {
     position: absolute;
-    left: 54px;
-    top: 54px;
-    width: 54px;
-    height: 54px;
+    left: 97px;
+    top: 97px;
+    width: 96px;
+    height: 96px;
     border: 2px solid rgba(84, 72, 39, .76);
     background: rgba(5, 5, 5, .46);
     box-sizing: border-box;
@@ -1242,17 +1211,17 @@ body.kof-touch-device:not(.kof-mobile-portrait) .kof-mobile-controller {
 
 .kof-mobile-actions {
     position: absolute;
-    right: max(20px, env(safe-area-inset-right));
-    bottom: max(18px, env(safe-area-inset-bottom));
-    width: 190px;
-    height: 150px;
+    right: 38px;
+    bottom: 34px;
+    width: 340px;
+    height: 270px;
     pointer-events: none;
 }
 
 .kof-mobile-actions button {
     position: absolute;
-    width: 62px;
-    height: 62px;
+    width: 112px;
+    height: 112px;
     border-radius: 50%;
     padding: 0;
 }
@@ -1263,99 +1232,53 @@ body.kof-touch-device:not(.kof-mobile-portrait) .kof-mobile-controller {
 }
 
 .kof-mobile-actions button span {
-    font-size: 21px;
+    font-size: 34px;
 }
 
 .kof-mobile-actions button small {
-    margin-top: 2px;
+    margin-top: 5px;
     color: #c9c39e;
-    font-size: 8px;
+    font-size: 14px;
 }
 
-.kof-mobile-actions .action-c { left: 64px; top: 0; }
-.kof-mobile-actions .action-d { right: 0; top: 47px; }
-.kof-mobile-actions .action-a { left: 0; top: 47px; }
-.kof-mobile-actions .action-b { left: 64px; bottom: 0; }
+.kof-mobile-actions .action-c { left: 114px; top: 0; }
+.kof-mobile-actions .action-d { right: 0; top: 84px; }
+.kof-mobile-actions .action-a { left: 0; top: 84px; }
+.kof-mobile-actions .action-b { left: 114px; bottom: 0; }
 
-body.kof-touch-device.kof-mobile-portrait .kof-mobile-rotate {
-    position: fixed;
-    z-index: 1200;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: #050505;
-    color: #f5d51f;
-    font: 900 18px/1.2 monospace;
-    text-align: center;
-    letter-spacing: 2px;
-}
+@media (pointer: coarse) {
+    .kof-stage {
+        --kof-mobile-scale: .5;
+        position: fixed;
+        z-index: 0;
+        left: 50%;
+        top: 50%;
+        display: block;
+        width: 1280px;
+        height: 720px;
+        transform: translate(-50%, -50%) scale(var(--kof-mobile-scale));
+        transform-origin: center center;
+    }
 
-.kof-mobile-rotate-icon {
-    margin-bottom: 8px;
-    font-size: 58px;
-    line-height: 1;
-}
+    .kof-stage #kof {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(var(--kof-shake-x), var(--kof-shake-y));
+        transform-origin: center center;
+    }
 
-.kof-mobile-rotate span {
-    color: #d3cba6;
-    font-size: 11px;
-}
-
-.kof-mobile-landscape-request {
-    min-width: 210px;
-    min-height: 44px;
-    margin-top: 14px;
-    padding: 9px 14px;
-    border: 3px solid #d9c65d;
-    border-right-color: #67551c;
-    border-bottom-color: #67551c;
-    border-radius: 0;
-    background: #11100b;
-    color: #f7e36a;
-    font: 900 12px/1 monospace;
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 0 #000;
-}
-
-@media (pointer: coarse) and (orientation: landscape) {
-    #kof {
-        /* Leave a little visual breathing room for translucent virtual controls. */
-        --kof-mobile-safe-scale: .94;
+    .kof-mobile-controller {
+        position: absolute;
+        z-index: 1000;
+        inset: 0;
+        display: block;
+        pointer-events: none;
     }
 }
 
-@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
-    .kof-mobile-dpad {
-        width: 138px;
-        height: 138px;
+@media (pointer: coarse) and (orientation: portrait) {
+    .kof-stage {
+        transform: translate(-50%, -50%) rotate(90deg) scale(var(--kof-mobile-scale));
     }
-
-    .kof-mobile-dpad button {
-        width: 50px;
-        height: 50px;
-    }
-
-    .kof-mobile-dpad .up { left: 44px; }
-    .kof-mobile-dpad .left { top: 44px; }
-    .kof-mobile-dpad .down { left: 44px; top: 88px; }
-    .kof-mobile-dpad .right { left: 88px; top: 44px; }
-    .kof-mobile-dpad .center { left: 46px; top: 46px; width: 46px; height: 46px; }
-
-    .kof-mobile-actions {
-        width: 166px;
-        height: 132px;
-    }
-
-    .kof-mobile-actions button {
-        width: 54px;
-        height: 54px;
-    }
-
-    .kof-mobile-actions .action-c { left: 56px; }
-    .kof-mobile-actions .action-d { top: 40px; }
-    .kof-mobile-actions .action-a { top: 40px; }
-    .kof-mobile-actions .action-b { left: 56px; }
 }
