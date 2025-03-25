@@ -23,11 +23,11 @@ export class MobileController {
 
     render() {
         document.body.insertAdjacentHTML('beforeend', `
-            <div class="kof-mobile-rotate" aria-hidden="true">
+            <div class="kof-mobile-rotate" aria-hidden="true" hidden>
                 <div class="kof-mobile-rotate-icon">↻</div>
                 <strong>ROTATE DEVICE</strong>
                 <span>LANDSCAPE MODE</span>
-                <button type="button" class="kof-mobile-landscape-request">TAP FOR LANDSCAPE</button>
+                <button type="button" class="kof-mobile-landscape-request" tabindex="-1">TAP FOR LANDSCAPE</button>
             </div>
             <div class="kof-mobile-controller" aria-label="Mobile game controls">
                 <div class="kof-mobile-topbar">
@@ -149,7 +149,8 @@ export class MobileController {
         const portrait = window.innerHeight > window.innerWidth;
         document.body.classList.toggle('kof-touch-device', this.isTouchDevice);
         document.body.classList.toggle('kof-mobile-portrait', this.isTouchDevice && portrait);
-        this.controller.setAttribute('aria-hidden', String(!this.isTouchDevice || portrait));
-        this.rotateNotice.setAttribute('aria-hidden', String(!this.isTouchDevice || !portrait));
+        this.root.fitViewport?.();
+        this.controller.setAttribute('aria-hidden', String(!this.isTouchDevice));
+        this.rotateNotice.setAttribute('aria-hidden', 'true');
     }
 }

@@ -419,6 +419,32 @@ body {
     background: #050505;
 }
 
+body.kof-touch-device.kof-mobile-portrait #kof {
+    left: 50%;
+    top: 50%;
+    transform-origin: center center;
+    transform:
+        translate(calc(-50% + var(--kof-shake-x)), calc(-50% + var(--kof-shake-y)))
+        rotate(90deg)
+        scale(var(--kof-scale));
+}
+
+body.kof-touch-device.kof-mobile-portrait .kof-mobile-controller {
+    display: block !important;
+    width: 100vh;
+    height: 100vw;
+    left: 50%;
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center center;
+}
+
+body.kof-touch-device.kof-mobile-portrait .kof-mobile-rotate {
+    display: none !important;
+}
+
 #kof {
     --kof-scale: 1;
     --kof-shake-x: 0px;
