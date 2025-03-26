@@ -72,16 +72,34 @@ export class MaiFighter extends FighterActor {
             'jump-a', 'jump-b', 'jump-c', 'jump-d',
             'special-projectile', 'special-rush', 'special-dive',
         ];
+        const scaleByName = {
+            'stand-a': 2.12,
+            'stand-b': 1.98,
+            'stand-c': 1.88,
+            'stand-d': 2.00,
+            'crouch-a': 1.92,
+            'crouch-b': 1.98,
+            'crouch-c': 1.55,
+            'crouch-d': 1.62,
+            'jump-a': 1.78,
+            'jump-b': 1.76,
+            'jump-c': 1.92,
+            'jump-d': 1.78,
+            'special-projectile': 1.84,
+            'special-rush': 1.62,
+            'special-dive': 1.92,
+        };
         names.forEach(name => {
             const gif = GIF();
             gif.load(`static/images/player/mai/attacks/${name}.gif?v=20260826-8`);
+            const scale = scaleByName[name] || 1.9;
             const animation = {
                 gif,
                 frame_cnt: 0,
                 frame_rate: 2,
-                offset_y: -66,
+                offset_y: Math.round(200 - 174 * scale),
                 loaded: false,
-                scale: 1.55,
+                scale,
             };
             this.attackAnimations.set(name, animation);
             gif.onload = () => {

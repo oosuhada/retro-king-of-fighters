@@ -64,16 +64,33 @@ export class KyoFighter extends FighterActor {
             'jump-a', 'jump-b', 'jump-c', 'jump-d',
             'special-projectile', 'special-rush',
         ];
+        const scaleByName = {
+            'stand-a': 1.95,
+            'stand-b': 1.85,
+            'stand-c': 1.90,
+            'stand-d': 1.70,
+            'crouch-a': 1.80,
+            'crouch-b': 1.78,
+            'crouch-c': 1.62,
+            'crouch-d': 1.55,
+            'jump-a': 1.72,
+            'jump-b': 1.82,
+            'jump-c': 1.72,
+            'jump-d': 1.70,
+            'special-projectile': 1.88,
+            'special-rush': 1.72,
+        };
         names.forEach(name => {
             const gif = GIF();
             gif.load(`static/images/player/kyo/attacks/${name}.gif?v=20260826-8`);
+            const scale = scaleByName[name] || 1.8;
             const animation = {
                 gif,
                 frame_cnt: 0,
                 frame_rate: 2,
-                offset_y: -66,
+                offset_y: Math.round(200 - 174 * scale),
                 loaded: false,
-                scale: 1.55,
+                scale,
             };
             this.attackAnimations.set(name, animation);
             gif.onload = () => {

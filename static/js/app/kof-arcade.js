@@ -1,6 +1,6 @@
 import { BattleArena } from '../arena/battle-arena.js?v=20260826-6';
-import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-8';
-import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-8';
+import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-14';
+import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-14';
 import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
@@ -63,6 +63,7 @@ class KofArcade {
         this.battle = null;
         this.helpOpen = false;
         this.pauseOpen = false;
+        this.pauseCursor = 0;
         this.handleGlobalKeydown = this.handleGlobalKeydown.bind(this);
         this.fitViewport = this.fitViewport.bind(this);
         $(window).on('resize.kof-fit', this.fitViewport);
@@ -340,6 +341,34 @@ class KofArcade {
     handleGlobalKeydown(event) {
         if (!this.game_map || this.game_map.phase === 'match-over') return;
         if (event.repeat) return;
+        if (this.pauseOpen) {
+            if (event.key === 'Escape' || event.key === 'p' || event.key === 'P') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.togglePause();
+                return;
+            }
+            if (['ArrowUp', 'w', 'W'].includes(event.key)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.pauseCursor = (this.pauseCursor + 2) % 3;
+                this.renderPauseMenu();
+                return;
+            }
+            if (['ArrowDown', 's', 'S'].includes(event.key)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.pauseCursor = (this.pauseCursor + 1) % 3;
+                this.renderPauseMenu();
+                return;
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                this.activatePauseMenu();
+                return;
+            }
+        }
         if (event.key === 'Escape' || event.key === 'p' || event.key === 'P') {
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -352,11 +381,46 @@ class KofArcade {
             this.toggleHelp();
             return;
         }
-        if (this.pauseOpen && (event.key === 't' || event.key === 'T')) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            window.location.reload();
+    }
+
+    renderPauseMenu() {
+        const canvas = this.$kof.find('.kof-pause-overlay canvas')[0];
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 320, 180);
+        ctx.imageSmoothingEnabled = false;
+        drawPixelText(ctx, 'PAUSE', 160, 30, { scale: 5, align: 'center', color: '#f5d31f', shadowColor: '#69150d', shadowOffset: 2 });
+        const items = ['RESUME', 'CONTROLS', 'RETURN TO TITLE'];
+        items.forEach((label, index) => {
+            const y = 82 + index * 24;
+            const selected = index === this.pauseCursor;
+            if (selected) {
+                ctx.fillStyle = '#f5d31f';
+                ctx.fillRect(63, y + 3, 5, 5);
+                ctx.fillRect(68, y + 6, 5, 5);
+                ctx.fillRect(63, y + 9, 5, 5);
+            }
+            drawPixelText(ctx, label, 160, y, {
+                scale: label.length > 10 ? 2 : 3,
+                align: 'center',
+                color: selected ? '#f5d31f' : '#d7c988',
+                shadowColor: '#000000',
+                shadowOffset: 1,
+            });
+        });
+        drawPixelText(ctx, 'UP DOWN SELECT  ENTER DECIDE', 160, 164, { scale: 1, align: 'center', color: '#ffffff' });
+    }
+
+    activatePauseMenu() {
+        if (this.pauseCursor === 0) {
+            this.togglePause();
+            return;
         }
+        if (this.pauseCursor === 1) {
+            this.toggleHelp();
+            return;
+        }
+        window.location.reload();
     }
 
     togglePause() {
@@ -369,18 +433,14 @@ class KofArcade {
             this.game_map.$canvas.focus();
             return;
         }
+        this.pauseCursor = 0;
         const $overlay = $(`
             <div class="kof-pause-overlay">
                 <canvas width="320" height="180"></canvas>
             </div>
         `);
         this.$kof.append($overlay);
-        const ctx = $overlay.find('canvas')[0].getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        drawPixelText(ctx, 'PAUSE', 160, 38, { scale: 5, align: 'center', color: '#f5d31f', shadowColor: '#69150d', shadowOffset: 2 });
-        drawPixelText(ctx, 'P / ESC  RESUME', 160, 94, { scale: 2, align: 'center', color: '#ffffff' });
-        drawPixelText(ctx, 'H  CONTROLS', 160, 116, { scale: 2, align: 'center', color: '#d7c988' });
-        drawPixelText(ctx, 'T  TITLE', 160, 138, { scale: 2, align: 'center', color: '#d7c988' });
+        this.renderPauseMenu();
     }
 
     toggleHelp() {
