@@ -1,5 +1,21 @@
 import { MotionBuffer } from './motion-buffer.js?v=20260826-5';
 
+export function normalizeKeyboardKey(event) {
+    const nativeEvent = event?.originalEvent || event || {};
+    const code = nativeEvent.code || event?.code || '';
+
+    // Use the physical key position first so WASD/J/K/U/I keeps working when
+    // the user's active keyboard layout is Korean (or any other non-Latin IME).
+    if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
+    if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+    if (/^Numpad[0-9]$/.test(code)) return code.slice(6);
+    if (code === 'Space') return ' ';
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'Backspace'].includes(code)) return code;
+
+    const key = event?.key ?? nativeEvent.key ?? '';
+    return /^[A-Z]$/.test(key) ? key.toLowerCase() : key;
+}
+
 export const PLAYER_CONTROLS = [
     {
         up: 'w', down: 's', left: 'a', right: 'd',
@@ -23,14 +39,15 @@ export class FightInput {
 
     start() {
         this.$canvas.keydown(event => {
-            if (!this.pressedKeys.has(event.key)) {
-                this.justPressed.add(event.key);
-                this.buffer.push(event.key);
+            const key = normalizeKeyboardKey(event);
+            if (!this.pressedKeys.has(key)) {
+                this.justPressed.add(key);
+                this.buffer.push(key);
             }
-            this.pressedKeys.add(event.key);
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) event.preventDefault();
+            this.pressedKeys.add(key);
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(key)) event.preventDefault();
         });
-        this.$canvas.keyup(event => this.pressedKeys.delete(event.key));
+        this.$canvas.keyup(event => this.pressedKeys.delete(normalizeKeyboardKey(event)));
     }
 
     isDown(key) {

@@ -1,11 +1,12 @@
-import { BattleArena } from '../arena/battle-arena.js?v=20260826-6';
-import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-14';
-import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-14';
+import { BattleArena } from '../arena/battle-arena.js?v=20260826-7';
+import { KyoFighter } from '../fighters/kyo-fighter.js?v=20260826-15';
+import { MaiFighter } from '../fighters/mai-fighter.js?v=20260826-15';
 import { TeamMatchState } from '../match/team-match-state.js';
 import { SingleMatchState } from '../match/single-match-state.js';
 import { CpuController, CPU_CONTROLS } from '../controllers/cpu-controller.js';
 import { drawPixelText } from '../ui/pixel-font.js?v=20260826-7';
 import { MobileController } from '../input/mobile-controller-v12.js';
+import { normalizeKeyboardKey } from '../input/fight-input.js?v=20260826-6';
 
 const ROSTER = [
     { name: 'MAI', FighterClass: MaiFighter, asset: 'mai', style: 'MOBILE PROJECTILE / RUSH', profile: { walkSpeed: 410, projectileSpeed: 560, damageScale: 1 } },
@@ -202,21 +203,22 @@ class KofArcade {
         });
         render();
         $(document).on('keydown.kof-screen', event => {
-            if (['ArrowUp', 'w', 'W'].includes(event.key)) {
+            const key = normalizeKeyboardKey(event);
+            if (['ArrowUp', 'w'].includes(key)) {
                 event.preventDefault();
                 cursor = (cursor - 1 + $items.length) % $items.length;
                 render();
             }
-            if (['ArrowDown', 's', 'S'].includes(event.key)) {
+            if (['ArrowDown', 's'].includes(key)) {
                 event.preventDefault();
                 cursor = (cursor + 1) % $items.length;
                 render();
             }
-            if (event.key === 'Enter') {
+            if (key === 'Enter') {
                 event.preventDefault();
                 chooseCurrent();
             }
-            if (event.key === 'Escape' && onBack) onBack();
+            if (key === 'Escape' && onBack) onBack();
         });
     }
 
@@ -239,7 +241,7 @@ class KofArcade {
         const next = () => this.showPlayerMode();
         this.$kof.find('.kof-start-pixel').on('click', next);
         $(document).on('keydown.kof-screen', event => {
-            if (event.key === 'Enter') next();
+            if (normalizeKeyboardKey(event) === 'Enter') next();
         });
     }
 
@@ -330,8 +332,9 @@ class KofArcade {
         this.$kof.find('[data-continue]').addClass('kof-menu-active');
         this.refreshMenuPixels();
         $(document).on('keydown.kof-screen', event => {
-            if (event.key === 'Enter') next();
-            if (event.key === 'Escape') {
+            const key = normalizeKeyboardKey(event);
+            if (key === 'Enter') next();
+            if (key === 'Escape') {
                 if (this.playerMode === 'one' && this.matchKind === 'single' && this.cpuDifficulty !== 'dummy') this.showDifficulty();
                 else this.showBattleMode();
             }
@@ -341,41 +344,42 @@ class KofArcade {
     handleGlobalKeydown(event) {
         if (!this.game_map || this.game_map.phase === 'match-over') return;
         if (event.repeat) return;
+        const key = normalizeKeyboardKey(event);
         if (this.pauseOpen) {
-            if (event.key === 'Escape' || event.key === 'p' || event.key === 'P') {
+            if (key === 'Escape' || key === 'p') {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 this.togglePause();
                 return;
             }
-            if (['ArrowUp', 'w', 'W'].includes(event.key)) {
+            if (['ArrowUp', 'w'].includes(key)) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 this.pauseCursor = (this.pauseCursor + 2) % 3;
                 this.renderPauseMenu();
                 return;
             }
-            if (['ArrowDown', 's', 'S'].includes(event.key)) {
+            if (['ArrowDown', 's'].includes(key)) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 this.pauseCursor = (this.pauseCursor + 1) % 3;
                 this.renderPauseMenu();
                 return;
             }
-            if (event.key === 'Enter') {
+            if (key === 'Enter') {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 this.activatePauseMenu();
                 return;
             }
         }
-        if (event.key === 'Escape' || event.key === 'p' || event.key === 'P') {
+        if (key === 'Escape' || key === 'p') {
             event.preventDefault();
             event.stopImmediatePropagation();
             this.togglePause();
             return;
         }
-        if (event.key === '?' || event.key === 'h' || event.key === 'H') {
+        if (key === '?' || key === 'h') {
             event.preventDefault();
             event.stopImmediatePropagation();
             this.toggleHelp();
@@ -560,21 +564,22 @@ class KofArcade {
         `, 'kof-character-select');
         this.render_character_select();
         $(document).on('keydown.kof-select', event => {
-            if (event.key === 'Escape') {
+            const key = normalizeKeyboardKey(event);
+            if (key === 'Escape') {
                 event.preventDefault();
                 $(document).off('keydown.kof-select');
                 this.showControls();
                 return;
             }
-            if (event.key === 'a') this.move_selection_cursor(0, -1);
-            if (event.key === 'd') this.move_selection_cursor(0, 1);
-            if (event.key === 'f') this.add_team_pick(0);
-            if (event.key === 'r') this.remove_team_pick(0);
+            if (key === 'a') this.move_selection_cursor(0, -1);
+            if (key === 'd') this.move_selection_cursor(0, 1);
+            if (key === 'f') this.add_team_pick(0);
+            if (key === 'r') this.remove_team_pick(0);
             if (this.playerMode === 'two') {
-                if (event.key === 'ArrowLeft') this.move_selection_cursor(1, -1);
-                if (event.key === 'ArrowRight') this.move_selection_cursor(1, 1);
-                if (event.key === 'Enter') this.add_team_pick(1);
-                if (event.key === 'Backspace') this.remove_team_pick(1);
+                if (key === 'ArrowLeft') this.move_selection_cursor(1, -1);
+                if (key === 'ArrowRight') this.move_selection_cursor(1, 1);
+                if (key === 'Enter') this.add_team_pick(1);
+                if (key === 'Backspace') this.remove_team_pick(1);
             }
             if (this.playerMode === 'one') this.prepareCpuChoices();
             this.render_character_select();
@@ -609,15 +614,16 @@ class KofArcade {
         this.pixelizeUi();
         this.render_order_select();
         $(document).on('keydown.kof-order', event => {
+            const key = normalizeKeyboardKey(event);
             if (!this.orderLocked[0]) {
-                if (event.key === 'a') this.rotateOrder(0, -1);
-                if (event.key === 'd') this.rotateOrder(0, 1);
-                if (event.key === 'f') this.orderLocked[0] = true;
+                if (key === 'a') this.rotateOrder(0, -1);
+                if (key === 'd') this.rotateOrder(0, 1);
+                if (key === 'f') this.orderLocked[0] = true;
             }
             if (this.playerMode === 'two' && !this.orderLocked[1]) {
-                if (event.key === 'ArrowLeft') this.rotateOrder(1, -1);
-                if (event.key === 'ArrowRight') this.rotateOrder(1, 1);
-                if (event.key === 'Enter') this.orderLocked[1] = true;
+                if (key === 'ArrowLeft') this.rotateOrder(1, -1);
+                if (key === 'ArrowRight') this.rotateOrder(1, 1);
+                if (key === 'Enter') this.orderLocked[1] = true;
             }
             this.render_order_select();
             if (this.orderLocked[0] && this.orderLocked[1]) {

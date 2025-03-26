@@ -1,5 +1,5 @@
 import { FrameActor } from '../runtime/frame-actor.js';
-import { FightInput } from '../input/fight-input.js';
+import { FightInput } from '../input/fight-input.js?v=20260826-6';
 import { Projectile } from '../combat/projectile.js?v=20260826-6';
 import { drawPixelText } from '../ui/pixel-font.js?v=20260826-6';
 

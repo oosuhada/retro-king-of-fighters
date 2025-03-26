@@ -1,5 +1,5 @@
 import { FrameActor } from "../runtime/frame-actor.js";
-import { PLAYER_CONTROLS } from '../input/fight-input.js?v=20260826-5';
+import { PLAYER_CONTROLS } from '../input/fight-input.js?v=20260826-6';
 
 export const FighterState = Object.freeze({
     IDLE: 0,
